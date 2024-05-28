@@ -1,12 +1,12 @@
-package Repositorios;
+package com.ulima.curso.softwareii.freelancedev.repositories;
 
 
-import entities.Trabajo;
+import com.ulima.curso.softwareii.freelancedev.entities.Trabajo;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.UUID;
 
 @RepositoryRestResource(path = "trabajo")
-public interface TrabajoRepo extends CrudRepository<Trabajo, UUID> {
+public interface TrabajoRepository extends CrudRepository<Trabajo, UUID> {
 }

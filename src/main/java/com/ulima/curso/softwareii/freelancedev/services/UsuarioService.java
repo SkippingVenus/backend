@@ -1,6 +1,6 @@
-package services;
+package com.ulima.curso.softwareii.freelancedev.services;
 
-import entities.Usuario;
+import com.ulima.curso.softwareii.freelancedev.entities.Usuario;
 
 import java.util.List;
 

@@ -1,21 +1,20 @@
-package service;
+package com.ulima.curso.softwareii.freelancedev.services;
 
-import Repositorios.ClienteRepo;
-import Repositorios.RolRepo;
-import entities.Cliente;
+import com.ulima.curso.softwareii.freelancedev.entities.Cliente;
+import com.ulima.curso.softwareii.freelancedev.repositories.ClienteRepository;
+import com.ulima.curso.softwareii.freelancedev.repositories.RolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import services.ClienteService;
 
 import java.util.List;
 
 @Service
 public class ClienteServiceImpl implements ClienteService {
     @Autowired
-    private ClienteRepo clienteRepo;
+    private ClienteRepository clienteRepo;
 
     @Autowired
-    private RolRepo rolRepo;
+    private RolRepository rolRepo;
 
     @Override
     public List<Cliente> findAll() {

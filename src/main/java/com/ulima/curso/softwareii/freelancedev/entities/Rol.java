@@ -1,4 +1,4 @@
-package entities;
+package com.ulima.curso.softwareii.freelancedev.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;

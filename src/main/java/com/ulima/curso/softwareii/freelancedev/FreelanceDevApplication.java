@@ -1,3 +1,5 @@
+package com.ulima.curso.softwareii.freelancedev;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

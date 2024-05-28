@@ -1,4 +1,4 @@
-package entities;
+package com.ulima.curso.softwareii.freelancedev.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

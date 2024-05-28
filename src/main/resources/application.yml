@@ -1,13 +1,11 @@
 spring:
   application:
-    name: freelance-dev
+    name: backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/db_freelance_dev
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: sasa1234
+    password: Andre_669
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-    hibernate:
-      ddl-auto: create
