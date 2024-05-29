@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UsuarioRepository extends CrudRepository<Usuario, UUID> {
+public interface UsuarioRepository<T extends Usuario> extends CrudRepository<T, UUID> {
     boolean existsByNombre(String nombre);
-    Optional<Usuario> findByNombre(String nombre);
+    Optional<T> findByNombre(String nombre);
 }

@@ -4,8 +4,8 @@ import com.ulima.curso.softwareii.freelancedev.entities.Usuario;
 
 import java.util.List;
 
-public interface UsuarioService {
-    List<Usuario> findAll();
-    Usuario save(Usuario usuario);
+public interface UsuarioService<T> {
+    List<T> findAll();
+    T save(T usuario);
     boolean existByNombre(String nombre);
 }

@@ -13,21 +13,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UsuarioServiceImpl implements UsuarioService{
+public class UsuarioServiceImpl<T extends Usuario> implements UsuarioService<T> {
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepository<T> usuarioRepository;
 
     @Autowired
     private RolRepository rolRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<Usuario> findAll() {
-        return (List<Usuario>) usuarioRepository.findAll();
+    public List<T> findAll() {
+        return (List<T>) usuarioRepository.findAll();
     }
 
     @Override
-    public Usuario save(Usuario usuario) {
+    public T save(T usuario) {
         Optional<Rol> optionalRolUsuario = rolRepository.findByNombre("ROL_USER");
         List<Rol> roles = new ArrayList<>();
 
