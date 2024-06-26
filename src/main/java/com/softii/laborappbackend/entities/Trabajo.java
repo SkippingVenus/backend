@@ -33,11 +33,15 @@ public class Trabajo {
     private String categoria;
     private String ubicacion;
 
+    @Lob
+    @Column(name = "imagen")
+    private byte[] imagen;
+
     // Constructor vacío
     public Trabajo() {}
 
     // Constructor con parámetros
-    public Trabajo(Cliente cliente, String titulo, String descripcion, Float presupuesto, Date fechaLimite, EstadoTrabajo estado, String categoria, String ubicacion) {
+    public Trabajo(Cliente cliente, String titulo, String descripcion, Float presupuesto, Date fechaLimite, EstadoTrabajo estado, String categoria, String ubicacion, byte[] imagen) {
         this.cliente = cliente;
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -46,6 +50,7 @@ public class Trabajo {
         this.estado = estado;
         this.categoria = categoria;
         this.ubicacion = ubicacion;
+        this.imagen = imagen;
     }
 
     // Getters
@@ -85,6 +90,10 @@ public class Trabajo {
         return ubicacion;
     }
 
+    public byte[] getImagen() {
+        return imagen;
+    }
+
     // Setters
     public void setIdtrabajo(Long idtrabajo) {
         this.idtrabajo = idtrabajo;
@@ -121,4 +130,11 @@ public class Trabajo {
     public void setUbicacion(String ubicacion) {
         this.ubicacion = ubicacion;
     }
+
+    public void setImagen(byte[] imagen) {
+        this.imagen = imagen;
+    }
+
+
 }
+
