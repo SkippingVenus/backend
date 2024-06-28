@@ -1,13 +1,24 @@
 package com.softii.laborappbackend.dto;
 
-import com.softii.laborappbackend.entities.EstadoPropuesta; // Asegúrate de importar EstadoPropuesta
+import java.util.Date;
 
 public class PropuestaCreationDTO {
+    private Long idpropuesta;
     private Long idtrabajo;
     private Long idfreelancer;
     private Float monto;
     private String descripcion;
-    private EstadoPropuesta estado; // Utiliza el enum directamente
+    private String estado;
+    private Date fechaCreacion;
+
+    // Getters y Setters
+    public Long getIdpropuesta() {
+        return idpropuesta;
+    }
+
+    public void setIdpropuesta(Long idpropuesta) {
+        this.idpropuesta = idpropuesta;
+    }
 
     public Long getIdtrabajo() {
         return idtrabajo;
@@ -41,11 +52,19 @@ public class PropuestaCreationDTO {
         this.descripcion = descripcion;
     }
 
-    public EstadoPropuesta getEstado() {
+    public String getEstado() {
         return estado;
     }
 
-    public void setEstado(EstadoPropuesta estado) {
+    public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

@@ -8,12 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TrabajoRepository extends JpaRepository<Trabajo, Long> {
-    // Buscar trabajos por categoría
-    List<Trabajo> findByCategoria(String categoria);
-
-    // Buscar trabajos por ubicación
-    List<Trabajo> findByUbicacion(String ubicacion);
-
-    // Buscar trabajos por estado
-    List<Trabajo> findByEstado(String estado);
+    List<Trabajo> findByClienteIdcliente(Long idcliente); // Asegúrate de que el nombre del método coincide con la entidad Cliente y su campo idcliente
 }

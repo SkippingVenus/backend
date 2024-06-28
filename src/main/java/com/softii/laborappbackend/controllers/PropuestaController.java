@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -34,96 +35,36 @@ public class PropuestaController {
 
     // Obtener todas las propuestas
     @GetMapping
-    public ResponseEntity<List<Propuesta>> obtenerTodasLasPropuestas() {
+    public ResponseEntity<List<PropuestaCreationDTO>> obtenerTodasLasPropuestas() {
         List<Propuesta> propuestas = propuestaRepository.findAll();
-        return ResponseEntity.ok(propuestas);
+        List<PropuestaCreationDTO> propuestaDTOs = new ArrayList<>();
+        for (Propuesta propuesta : propuestas) {
+            PropuestaCreationDTO propuestaDTO = new PropuestaCreationDTO();
+            propuestaDTO.setIdtrabajo(propuesta.getTrabajo().getIdtrabajo());
+            propuestaDTO.setIdfreelancer(propuesta.getFreelancer().getIdfreelancer());
+            propuestaDTO.setMonto(propuesta.getMonto());
+            propuestaDTO.setDescripcion(propuesta.getDescripcion());
+            propuestaDTO.setEstado(propuesta.getEstado().toString());
+            propuestaDTOs.add(propuestaDTO);
+        }
+        return ResponseEntity.ok(propuestaDTOs);
     }
 
     // Obtener una propuesta por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Propuesta> obtenerPropuestaPorId(@PathVariable Long id) {
+    public ResponseEntity<PropuestaCreationDTO> obtenerPropuestaPorId(@PathVariable Long id) {
         Optional<Propuesta> propuestaOptional = propuestaRepository.findById(id);
-        return propuestaOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // DTO para la creación de una propuesta
-    public static class PropuestaCreationDTO {
-        private Long idtrabajo;
-        private Long idfreelancer;
-        private Float monto;
-        private String descripcion;
-        private String estado;
-
-        // Getters y Setters (generados automáticamente o con Lombok)
-        public Long getIdtrabajo() {
-            return idtrabajo;
-        }
-
-        public void setIdtrabajo(Long idtrabajo) {
-            this.idtrabajo = idtrabajo;
-        }
-
-        public Long getIdfreelancer() {
-            return idfreelancer;
-        }
-
-        public void setIdfreelancer(Long idfreelancer) {
-            this.idfreelancer = idfreelancer;
-        }
-
-        public Float getMonto() {
-            return monto;
-        }
-
-        public void setMonto(Float monto) {
-            this.monto = monto;
-        }
-
-        public String getDescripcion() {
-            return descripcion;
-        }
-
-        public void setDescripcion(String descripcion) {
-            this.descripcion = descripcion;
-        }
-
-        public String getEstado() {
-            return estado;
-        }
-
-        public void setEstado(String estado) {
-            this.estado = estado;
-        }
-    }
-
-    // Crear una nueva propuesta
-    @PostMapping
-    public ResponseEntity<?> crearPropuesta(@RequestBody PropuestaCreationDTO propuestaDTO) {
-        try {
-            // Verificar si el trabajo y el freelancer existen
-            Trabajo trabajo = trabajoRepository.findById(propuestaDTO.getIdtrabajo())
-                    .orElseThrow(() -> new EntityNotFoundException("Trabajo no encontrado"));
-
-            Freelancer freelancer = freelancerRepository.findById(propuestaDTO.getIdfreelancer())
-                    .orElseThrow(() -> new EntityNotFoundException("Freelancer no encontrado"));
-
-            // Crear y guardar la propuesta
-            Propuesta nuevaPropuesta = new Propuesta();
-            nuevaPropuesta.setTrabajo(trabajo);
-            nuevaPropuesta.setFreelancer(freelancer);
-            nuevaPropuesta.setMonto(propuestaDTO.getMonto());
-            nuevaPropuesta.setDescripcion(propuestaDTO.getDescripcion());
-            nuevaPropuesta.setEstado(EstadoPropuesta.valueOf(propuestaDTO.getEstado())); // Asignar estado desde el DTO
-            nuevaPropuesta.setFechaCreacion(new Date());
-
-            Propuesta propuestaGuardada = propuestaRepository.save(nuevaPropuesta);
-            return ResponseEntity.status(HttpStatus.CREATED).body(propuestaGuardada);
-        } catch (EntityNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (IllegalArgumentException ex) { // Capturar IllegalArgumentException si el estado no es válido
-            return ResponseEntity.badRequest().body("Estado de propuesta no válido");
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
+        if (propuestaOptional.isPresent()) {
+            Propuesta propuesta = propuestaOptional.get();
+            PropuestaCreationDTO propuestaDTO = new PropuestaCreationDTO();
+            propuestaDTO.setIdtrabajo(propuesta.getTrabajo().getIdtrabajo());
+            propuestaDTO.setIdfreelancer(propuesta.getFreelancer().getIdfreelancer());
+            propuestaDTO.setMonto(propuesta.getMonto());
+            propuestaDTO.setDescripcion(propuesta.getDescripcion());
+            propuestaDTO.setEstado(propuesta.getEstado().toString());
+            return ResponseEntity.ok(propuestaDTO);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 

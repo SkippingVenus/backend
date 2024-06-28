@@ -1,5 +1,6 @@
 package com.softii.laborappbackend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.Date;
 
@@ -12,129 +13,104 @@ public class Trabajo {
     private Long idtrabajo;
 
     @ManyToOne
-    @JoinColumn(name = "idcliente", referencedColumnName = "idcliente")
+    @JoinColumn(name = "idcliente", nullable = false)
     private Cliente cliente;
 
-    @Column(nullable = false)
     private String titulo;
-
-    @Column(nullable = false, length = 1000)
     private String descripcion;
-
-    private Float presupuesto;
+    private String categoria;
+    private String ubicacion;
 
     @Temporal(TemporalType.DATE)
     private Date fechaLimite;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private EstadoTrabajo estado;
 
-    private String categoria;
-    private String ubicacion;
+    private double presupuesto;
 
+    @JsonIgnore
     @Lob
-    @Column(name = "imagen")
     private byte[] imagen;
 
-    // Constructor vacío
-    public Trabajo() {}
-
-    // Constructor con parámetros
-    public Trabajo(Cliente cliente, String titulo, String descripcion, Float presupuesto, Date fechaLimite, EstadoTrabajo estado, String categoria, String ubicacion, byte[] imagen) {
-        this.cliente = cliente;
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.presupuesto = presupuesto;
-        this.fechaLimite = fechaLimite;
-        this.estado = estado;
-        this.categoria = categoria;
-        this.ubicacion = ubicacion;
-        this.imagen = imagen;
-    }
-
-    // Getters
+    // Getters y setters
     public Long getIdtrabajo() {
         return idtrabajo;
+    }
+
+    public void setIdtrabajo(Long idtrabajo) {
+        this.idtrabajo = idtrabajo;
     }
 
     public Cliente getCliente() {
         return cliente;
     }
 
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public Float getPresupuesto() {
-        return presupuesto;
-    }
-
-    public Date getFechaLimite() {
-        return fechaLimite;
-    }
-
-    public EstadoTrabajo getEstado() {
-        return estado;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public String getUbicacion() {
-        return ubicacion;
-    }
-
-    public byte[] getImagen() {
-        return imagen;
-    }
-
-    // Setters
-    public void setIdtrabajo(Long idtrabajo) {
-        this.idtrabajo = idtrabajo;
-    }
-
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
+    }
+
+    public String getTitulo() {
+        return titulo;
     }
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
 
-    public void setPresupuesto(Float presupuesto) {
-        this.presupuesto = presupuesto;
-    }
-
-    public void setFechaLimite(Date fechaLimite) {
-        this.fechaLimite = fechaLimite;
-    }
-
-    public void setEstado(EstadoTrabajo estado) {
-        this.estado = estado;
+    public String getCategoria() {
+        return categoria;
     }
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
     }
 
+    public String getUbicacion() {
+        return ubicacion;
+    }
+
     public void setUbicacion(String ubicacion) {
         this.ubicacion = ubicacion;
+    }
+
+    public Date getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(Date fechaLimite) {
+        this.fechaLimite = fechaLimite;
+    }
+
+    public EstadoTrabajo getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoTrabajo estado) {
+        this.estado = estado;
+    }
+
+    public double getPresupuesto() {
+        return presupuesto;
+    }
+
+    public void setPresupuesto(double presupuesto) {
+        this.presupuesto = presupuesto;
+    }
+
+    public byte[] getImagen() {
+        return imagen;
     }
 
     public void setImagen(byte[] imagen) {
         this.imagen = imagen;
     }
-
-
 }
-
