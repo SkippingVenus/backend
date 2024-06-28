@@ -50,4 +50,8 @@ public class Cliente {
     public void setTrabajos(Set<Trabajo> trabajos) {
         this.trabajos = trabajos;
     }
+
+    public String getNombre() {
+        return usuario.getNombre();
+    }
 }

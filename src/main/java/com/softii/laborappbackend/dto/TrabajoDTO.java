@@ -3,40 +3,38 @@ package com.softii.laborappbackend.dto;
 import com.softii.laborappbackend.entities.Trabajo;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.Date;
-
 public class TrabajoDTO {
     private Long idtrabajo;
     private String titulo;
     private String descripcion;
+    private Double presupuesto;
+    private String fechaLimite;
+    private String estado;
     private String categoria;
     private String ubicacion;
-    private Date fechaLimite;
-    private String estado;
-    private Long idcliente;
     private String imagenUrl;
+    private Long idcliente;
+    private String nombreCliente;
 
     public TrabajoDTO() {
-        // Constructor vacío
     }
 
     public TrabajoDTO(Trabajo trabajo) {
         this.idtrabajo = trabajo.getIdtrabajo();
         this.titulo = trabajo.getTitulo();
         this.descripcion = trabajo.getDescripcion();
+        this.presupuesto = trabajo.getPresupuesto();
+        this.fechaLimite = trabajo.getFechaLimite() != null ? trabajo.getFechaLimite().toString() : null;
+        this.estado = trabajo.getEstado() != null ? trabajo.getEstado().name() : null;
         this.categoria = trabajo.getCategoria();
         this.ubicacion = trabajo.getUbicacion();
-        this.fechaLimite = trabajo.getFechaLimite();
-        this.estado = trabajo.getEstado().name();
+        this.imagenUrl = trabajo.getImagen() != null ? generarImagenUrl(trabajo.getIdtrabajo()) : null;
         this.idcliente = trabajo.getCliente().getIdcliente();
-        this.imagenUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/trabajos/")
-                .path(trabajo.getIdtrabajo().toString())
-                .path("/imagen")
-                .toUriString();
+        this.nombreCliente = trabajo.getCliente().getNombre();
     }
 
-    // Getters y Setters
+    // Getters y setters para todos los campos
+
     public Long getIdtrabajo() {
         return idtrabajo;
     }
@@ -61,6 +59,30 @@ public class TrabajoDTO {
         this.descripcion = descripcion;
     }
 
+    public Double getPresupuesto() {
+        return presupuesto;
+    }
+
+    public void setPresupuesto(Double presupuesto) {
+        this.presupuesto = presupuesto;
+    }
+
+    public String getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(String fechaLimite) {
+        this.fechaLimite = fechaLimite;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
     public String getCategoria() {
         return categoria;
     }
@@ -77,20 +99,12 @@ public class TrabajoDTO {
         this.ubicacion = ubicacion;
     }
 
-    public Date getFechaLimite() {
-        return fechaLimite;
+    public String getImagenUrl() {
+        return imagenUrl;
     }
 
-    public void setFechaLimite(Date fechaLimite) {
-        this.fechaLimite = fechaLimite;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
+    public void setImagenUrl(String imagenUrl) {
+        this.imagenUrl = imagenUrl;
     }
 
     public Long getIdcliente() {
@@ -101,11 +115,19 @@ public class TrabajoDTO {
         this.idcliente = idcliente;
     }
 
-    public String getImagenUrl() {
-        return imagenUrl;
+    public String getNombreCliente() {
+        return nombreCliente;
     }
 
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
+    public void setNombreCliente(String nombreCliente) {
+        this.nombreCliente = nombreCliente;
+    }
+
+    private String generarImagenUrl(Long trabajoId) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/trabajos/")
+                .path(trabajoId.toString())
+                .path("/imagen")
+                .toUriString();
     }
 }

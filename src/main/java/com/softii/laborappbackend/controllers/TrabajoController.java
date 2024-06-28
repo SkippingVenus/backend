@@ -12,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,6 +27,8 @@ import java.util.*;
 @RequestMapping("/trabajos")
 public class TrabajoController {
 
+    private static final Logger logger = LoggerFactory.getLogger(TrabajoController.class);
+
     @Autowired
     private TrabajoRepository trabajoRepository;
 
@@ -32,7 +36,18 @@ public class TrabajoController {
     private ClienteRepository clienteRepository;
 
     @PostMapping(consumes = { "multipart/form-data" })
+    @Transactional
     public ResponseEntity<?> crearTrabajo(@RequestPart("trabajoData") String trabajoData, @RequestPart("imagen") MultipartFile imagen) {
+        return saveOrUpdateTrabajo(null, trabajoData, imagen);
+    }
+
+    @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
+    @Transactional
+    public ResponseEntity<?> actualizarTrabajo(@PathVariable Long id, @RequestPart("trabajoData") String trabajoData, @RequestPart("imagen") MultipartFile imagen) {
+        return saveOrUpdateTrabajo(id, trabajoData, imagen);
+    }
+
+    private ResponseEntity<?> saveOrUpdateTrabajo(Long id, String trabajoData, MultipartFile imagen) {
         try {
             TrabajoCreationDTO trabajoDTO = new ObjectMapper().readValue(trabajoData, TrabajoCreationDTO.class);
             EstadoTrabajo estadoTrabajo = EstadoTrabajo.valueOf(trabajoDTO.getEstado().toUpperCase());
@@ -45,25 +60,37 @@ public class TrabajoController {
             }
             Cliente cliente = clienteOptional.get();
 
-            Trabajo nuevoTrabajo = new Trabajo();
-            nuevoTrabajo.setCliente(cliente);
-            nuevoTrabajo.setTitulo(trabajoDTO.getTitulo());
-            nuevoTrabajo.setDescripcion(trabajoDTO.getDescripcion());
-            nuevoTrabajo.setPresupuesto(trabajoDTO.getPresupuesto());
-            nuevoTrabajo.setFechaLimite(fechaLimiteDate);
-            nuevoTrabajo.setEstado(estadoTrabajo);
-            nuevoTrabajo.setCategoria(trabajoDTO.getCategoria());
-            nuevoTrabajo.setUbicacion(trabajoDTO.getUbicacion());
-
-            if (!imagen.isEmpty()) {
-                nuevoTrabajo.setImagen(imagen.getBytes());
+            Trabajo trabajo;
+            if (id == null) {
+                trabajo = new Trabajo();
+            } else {
+                Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
+                if (trabajoOptional.isEmpty()) {
+                    return ResponseEntity.notFound().build();
+                }
+                trabajo = trabajoOptional.get();
             }
 
-            Trabajo trabajoGuardado = trabajoRepository.save(nuevoTrabajo);
+            trabajo.setCliente(cliente);
+            trabajo.setTitulo(trabajoDTO.getTitulo());
+            trabajo.setDescripcion(trabajoDTO.getDescripcion());
+            trabajo.setPresupuesto(trabajoDTO.getPresupuesto());
+            trabajo.setFechaLimite(fechaLimiteDate);
+            trabajo.setEstado(estadoTrabajo);
+            trabajo.setCategoria(trabajoDTO.getCategoria());
+            trabajo.setUbicacion(trabajoDTO.getUbicacion());
+
+            if (imagen != null && !imagen.isEmpty()) {
+                trabajo.setImagen(imagen.getBytes());
+            }
+
+            Trabajo trabajoGuardado = trabajoRepository.save(trabajo);
             return ResponseEntity.status(HttpStatus.CREATED).body(new TrabajoDTO(trabajoGuardado));
         } catch (IllegalArgumentException | ParseException ex) {
+            logger.error("Error parsing date or invalid state: ", ex);
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Datos de trabajo no válidos (verifica el formato de la fecha y estado)"));
         } catch (Exception ex) {
+            logger.error("Internal server error: ", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error interno del servidor: " + ex.getMessage()));
         }
     }
@@ -79,6 +106,7 @@ public class TrabajoController {
     }
 
     @GetMapping("/{id}/imagen")
+    @Transactional(readOnly = true)
     public ResponseEntity<byte[]> obtenerImagen(@PathVariable Long id) {
         Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
         if (trabajoOptional.isPresent() && trabajoOptional.get().getImagen() != null) {
@@ -90,6 +118,7 @@ public class TrabajoController {
     }
 
     @GetMapping("/cliente/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<TrabajoDTO>> getTrabajosByClienteId(@PathVariable Long id) {
         List<Trabajo> trabajos = trabajoRepository.findByClienteIdcliente(id);
         List<TrabajoDTO> trabajoDTOs = new ArrayList<>();
@@ -99,11 +128,15 @@ public class TrabajoController {
         return ResponseEntity.ok(trabajoDTOs);
     }
 
-    private String generarImagenUrl(Long trabajoId) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/trabajos/")
-                .path(trabajoId.toString())
-                .path("/imagen")
-                .toUriString();
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> eliminarTrabajo(@PathVariable Long id) {
+        Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
+        if (trabajoOptional.isPresent()) {
+            trabajoRepository.delete(trabajoOptional.get());
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
