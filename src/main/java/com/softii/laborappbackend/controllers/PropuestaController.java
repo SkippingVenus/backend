@@ -1,23 +1,17 @@
 package com.softii.laborappbackend.controllers;
 
 import com.softii.laborappbackend.dto.PropuestaCreationDTO;
-import com.softii.laborappbackend.entities.EstadoPropuesta;
-import com.softii.laborappbackend.entities.Freelancer;
 import com.softii.laborappbackend.entities.Propuesta;
-import com.softii.laborappbackend.entities.Trabajo;
 import com.softii.laborappbackend.repositories.FreelancerRepository;
 import com.softii.laborappbackend.repositories.PropuestaRepository;
 import com.softii.laborappbackend.repositories.TrabajoRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.ArrayList;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -33,7 +27,6 @@ public class PropuestaController {
     @Autowired
     private FreelancerRepository freelancerRepository;
 
-    // Obtener todas las propuestas
     @GetMapping
     public ResponseEntity<List<PropuestaCreationDTO>> obtenerTodasLasPropuestas() {
         List<Propuesta> propuestas = propuestaRepository.findAll();
@@ -50,7 +43,6 @@ public class PropuestaController {
         return ResponseEntity.ok(propuestaDTOs);
     }
 
-    // Obtener una propuesta por ID
     @GetMapping("/{id}")
     public ResponseEntity<PropuestaCreationDTO> obtenerPropuestaPorId(@PathVariable Long id) {
         Optional<Propuesta> propuestaOptional = propuestaRepository.findById(id);
@@ -68,7 +60,6 @@ public class PropuestaController {
         }
     }
 
-    // Actualizar una propuesta existente
     @PutMapping("/{id}")
     public ResponseEntity<Propuesta> actualizarPropuesta(@PathVariable Long id, @RequestBody Propuesta propuesta) {
         if (propuestaRepository.existsById(id)) {
@@ -80,7 +71,6 @@ public class PropuestaController {
         }
     }
 
-    // Eliminar una propuesta
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPropuesta(@PathVariable Long id) {
         if (propuestaRepository.existsById(id)) {
