@@ -15,31 +15,43 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/usuarios")
-@CrossOrigin(origins = "http://localhost:3000") // Habilita CORS para el frontend
+@CrossOrigin(origins = "http://localhost:3000")
 public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Obtener todos los usuarios
     @GetMapping
     public ResponseEntity<List<Usuario>> obtenerTodosLosUsuarios() {
         List<Usuario> usuarios = usuarioRepository.findAll();
         return ResponseEntity.ok(usuarios);
     }
 
-    // Obtener un usuario por ID
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> obtenerUsuarioPorId(@PathVariable Long id) {
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
         return usuarioOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Crear un nuevo usuario
+    @GetMapping("/perfil/{id}")
+    public ResponseEntity<?> obtenerPerfil(@PathVariable Long id) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (usuarioOptional.isPresent()) {
+            return ResponseEntity.ok(usuarioOptional.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> crearUsuario(@RequestBody Usuario usuario) {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya existe un usuario con este correo electrónico");
+        }
+
+        if (usuario.getNombre() == null || usuario.getCorreo() == null || usuario.getContrasenia() == null ||
+                usuario.getEdad() == 0 || usuario.getSexo() == null || usuario.getNumeroCelular() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Todos los campos son requeridos");
         }
 
         String rolString = usuario.getRol().toString().toUpperCase();
@@ -52,7 +64,6 @@ public class UsuarioController {
 
         Usuario nuevoUsuario = usuarioRepository.save(usuario);
 
-        // Crear un mapa con el id del usuario y su rol
         Map<String, Object> response = new HashMap<>();
         response.put("idusuario", nuevoUsuario.getIdusuario());
         response.put("rol", nuevoUsuario.getRol().toString());
@@ -60,7 +71,6 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Actualizar un usuario existente
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
         if (usuarioRepository.existsById(id)) {
@@ -72,7 +82,6 @@ public class UsuarioController {
         }
     }
 
-    // Eliminar un usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
         if (usuarioRepository.existsById(id)) {
@@ -83,7 +92,6 @@ public class UsuarioController {
         }
     }
 
-    // Endpoint para login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String correo = credentials.get("correo");
@@ -102,3 +110,6 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas");
     }
 }
+
+
+

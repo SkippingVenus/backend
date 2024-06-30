@@ -23,15 +23,27 @@ public class Usuario {
     @Column(nullable = false)
     private Rol rol;
 
+    @Column(nullable = false)
+    private int edad;
+
+    @Column(nullable = false)
+    private String sexo;
+
+    @Column(name = "numero_celular", nullable = false)
+    private String numeroCelular;
+
     // Constructor vacío
     public Usuario() {}
 
     // Constructor con parámetros
-    public Usuario(String nombre, String correo, String contrasenia, Rol rol) {
+    public Usuario(String nombre, String correo, String contrasenia, Rol rol, int edad, String sexo, String numeroCelular) {
         this.nombre = nombre;
         this.correo = correo;
         this.contrasenia = contrasenia;
         this.rol = rol;
+        this.edad = edad;
+        this.sexo = sexo;
+        this.numeroCelular = numeroCelular;
     }
 
     // Getters
@@ -55,6 +67,18 @@ public class Usuario {
         return rol;
     }
 
+    public int getEdad() {
+        return edad;
+    }
+
+    public String getSexo() {
+        return sexo;
+    }
+
+    public String getNumeroCelular() {
+        return numeroCelular;
+    }
+
     // Setters
     public void setIdusuario(Long idusuario) {
         this.idusuario = idusuario;
@@ -75,4 +99,17 @@ public class Usuario {
     public void setRol(Rol rol) {
         this.rol = rol;
     }
+
+    public void setEdad(int edad) {
+        this.edad = edad;
+    }
+
+    public void setSexo(String sexo) {
+        this.sexo = sexo;
+    }
+
+    public void setNumeroCelular(String numeroCelular) {
+        this.numeroCelular = numeroCelular;
+    }
 }
+
