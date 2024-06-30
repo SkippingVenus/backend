@@ -120,7 +120,7 @@ public class TrabajoController {
     @GetMapping("/cliente/{id}")
     @Transactional(readOnly = true)
     public ResponseEntity<List<TrabajoDTO>> getTrabajosByClienteId(@PathVariable Long id) {
-        List<Trabajo> trabajos = trabajoRepository.findByClienteIdcliente(id);
+        List<Trabajo> trabajos = trabajoRepository.findByCliente_Idcliente(id);
         List<TrabajoDTO> trabajoDTOs = new ArrayList<>();
         for (Trabajo trabajo : trabajos) {
             trabajoDTOs.add(new TrabajoDTO(trabajo));

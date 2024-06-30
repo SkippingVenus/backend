@@ -1,72 +1,60 @@
 package com.softii.laborappbackend.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "freelancer")
 public class Freelancer {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idfreelancer;
 
-    @OneToOne
-    @JoinColumn(name = "idusuario", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "idusuario")
+    @JsonBackReference
     private Usuario usuario;
 
     private Float calificacion;
-    @Column(length = 1000)
+
+    // Otros campos relevantes
     private String descripcion;
-    @Column(length = 1000)
     private String habilidades;
 
-    // Constructor vacío
-    public Freelancer() {}
-
-    // Constructor con parámetros
-    public Freelancer(Usuario usuario, Float calificacion, String descripcion, String habilidades) {
-        this.usuario = usuario;
-        this.calificacion = calificacion;
-        this.descripcion = descripcion;
-        this.habilidades = habilidades;
-    }
-
-    // Getters
+    // Getters y setters
     public Long getIdfreelancer() {
         return idfreelancer;
+    }
+
+    public void setIdfreelancer(Long idfreelancer) {
+        this.idfreelancer = idfreelancer;
     }
 
     public Usuario getUsuario() {
         return usuario;
     }
 
-    public Float getCalificacion() {
-        return calificacion;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public String getHabilidades() {
-        return habilidades;
-    }
-
-    // Setters
-    public void setIdfreelancer(Long idfreelancer) {
-        this.idfreelancer = idfreelancer;
-    }
-
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public Float getCalificacion() {
+        return calificacion;
     }
 
     public void setCalificacion(Float calificacion) {
         this.calificacion = calificacion;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getHabilidades() {
+        return habilidades;
     }
 
     public void setHabilidades(String habilidades) {

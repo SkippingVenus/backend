@@ -1,115 +1,88 @@
 package com.softii.laborappbackend.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "usuario")
 public class Usuario {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idusuario;
 
-    @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String correo;
 
     @Column(nullable = false)
-    private String contrasenia;
+    private String contrasena;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Rol rol;
 
-    @Column(nullable = false)
-    private int edad;
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Freelancer> freelancers;
 
-    @Column(nullable = false)
-    private String sexo;
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Cliente> clientes;
 
-    @Column(name = "numero_celular", nullable = false)
-    private String numeroCelular;
-
-    // Constructor vacío
-    public Usuario() {}
-
-    // Constructor con parámetros
-    public Usuario(String nombre, String correo, String contrasenia, Rol rol, int edad, String sexo, String numeroCelular) {
-        this.nombre = nombre;
-        this.correo = correo;
-        this.contrasenia = contrasenia;
-        this.rol = rol;
-        this.edad = edad;
-        this.sexo = sexo;
-        this.numeroCelular = numeroCelular;
-    }
-
-    // Getters
+    // Getters y setters
     public Long getIdusuario() {
         return idusuario;
+    }
+
+    public void setIdusuario(Long idusuario) {
+        this.idusuario = idusuario;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public String getCorreo() {
-        return correo;
-    }
-
-    public String getContrasenia() {
-        return contrasenia;
-    }
-
-    public Rol getRol() {
-        return rol;
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public String getSexo() {
-        return sexo;
-    }
-
-    public String getNumeroCelular() {
-        return numeroCelular;
-    }
-
-    // Setters
-    public void setIdusuario(Long idusuario) {
-        this.idusuario = idusuario;
-    }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
     }
 
     public void setCorreo(String correo) {
         this.correo = correo;
     }
 
-    public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
+    public String getContrasena() {
+        return contrasena;
+    }
+
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
+
+    public Rol getRol() {
+        return rol;
     }
 
     public void setRol(Rol rol) {
         this.rol = rol;
     }
 
-    public void setEdad(int edad) {
-        this.edad = edad;
+    public List<Freelancer> getFreelancers() {
+        return freelancers;
     }
 
-    public void setSexo(String sexo) {
-        this.sexo = sexo;
+    public void setFreelancers(List<Freelancer> freelancers) {
+        this.freelancers = freelancers;
     }
 
-    public void setNumeroCelular(String numeroCelular) {
-        this.numeroCelular = numeroCelular;
+    public List<Cliente> getClientes() {
+        return clientes;
+    }
+
+    public void setClientes(List<Cliente> clientes) {
+        this.clientes = clientes;
     }
 }
-

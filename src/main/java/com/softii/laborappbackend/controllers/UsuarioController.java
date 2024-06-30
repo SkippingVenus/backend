@@ -1,115 +1,95 @@
 package com.softii.laborappbackend.controllers;
 
-import com.softii.laborappbackend.entities.Rol;
+import com.softii.laborappbackend.dto.UsuarioCreationDTO;
 import com.softii.laborappbackend.entities.Usuario;
+import com.softii.laborappbackend.entities.Rol;
 import com.softii.laborappbackend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/usuarios")
 @CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/usuarios")
 public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @GetMapping
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> login(@RequestBody Usuario loginData) {
+        try {
+            Optional<Usuario> usuarioOptional = usuarioRepository.findByCorreo(loginData.getCorreo());
+            if (usuarioOptional.isPresent()) {
+                Usuario usuario = usuarioOptional.get();
+                if (usuario.getContrasena().equals(loginData.getContrasena())) {
+                    return ResponseEntity.ok(usuario);
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Credenciales incorrectas"));
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Usuario no encontrado"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error en el servidor"));
+        }
+    }
+
+    @GetMapping(produces = "application/json")
     public ResponseEntity<List<Usuario>> obtenerTodosLosUsuarios() {
         List<Usuario> usuarios = usuarioRepository.findAll();
         return ResponseEntity.ok(usuarios);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<Usuario> obtenerUsuarioPorId(@PathVariable Long id) {
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
-        return usuarioOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return usuarioOptional.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/perfil/{id}")
-    public ResponseEntity<?> obtenerPerfil(@PathVariable Long id) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
-        if (usuarioOptional.isPresent()) {
-            return ResponseEntity.ok(usuarioOptional.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        }
-    }
-
-    @PostMapping
-    public ResponseEntity<?> crearUsuario(@RequestBody Usuario usuario) {
-        if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Ya existe un usuario con este correo electrónico");
-        }
-
-        if (usuario.getNombre() == null || usuario.getCorreo() == null || usuario.getContrasenia() == null ||
-                usuario.getEdad() == 0 || usuario.getSexo() == null || usuario.getNumeroCelular() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Todos los campos son requeridos");
-        }
-
-        String rolString = usuario.getRol().toString().toUpperCase();
+    @PostMapping(consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> crearUsuario(@RequestBody UsuarioCreationDTO usuarioDTO) {
         try {
-            Rol rolEnum = Rol.valueOf(rolString);
-            usuario.setRol(rolEnum);
+            Usuario usuario = new Usuario();
+            usuario.setNombre(usuarioDTO.getNombre());
+            usuario.setCorreo(usuarioDTO.getCorreo());
+            usuario.setContrasena(usuarioDTO.getContrasena());
+            usuario.setRol(Rol.valueOf(usuarioDTO.getRol().toUpperCase()));
+
+            Usuario nuevoUsuario = usuarioRepository.save(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Rol no válido");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "Rol no válido"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", e.getMessage()));
         }
-
-        Usuario nuevoUsuario = usuarioRepository.save(usuario);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("idusuario", nuevoUsuario.getIdusuario());
-        response.put("rol", nuevoUsuario.getRol().toString());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
-        if (usuarioRepository.existsById(id)) {
-            usuario.setIdusuario(id);
-            Usuario usuarioActualizado = usuarioRepository.save(usuario);
-            return ResponseEntity.ok(usuarioActualizado);
-        } else {
+        if (!usuarioRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+
+        usuario.setIdusuario(id);
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return ResponseEntity.ok(usuarioActualizado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
-        if (usuarioRepository.existsById(id)) {
-            usuarioRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
+        if (!usuarioRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-    }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String correo = credentials.get("correo");
-        String contrasenia = credentials.get("contrasenia");
-
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByCorreo(correo);
-        if (usuarioOptional.isPresent()) {
-            Usuario usuario = usuarioOptional.get();
-            if (usuario.getContrasenia().equals(contrasenia)) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("idusuario", usuario.getIdusuario());
-                response.put("rol", usuario.getRol().toString());
-                return ResponseEntity.ok(response);
-            }
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas");
+        usuarioRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
-
-

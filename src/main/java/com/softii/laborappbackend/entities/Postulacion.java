@@ -1,7 +1,6 @@
 package com.softii.laborappbackend.entities;
 
 import jakarta.persistence.*;
-import java.util.Date;
 
 @Entity
 public class Postulacion {
@@ -10,22 +9,22 @@ public class Postulacion {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "freelancer_id")
+    @JoinColumn(name = "idfreelancer")
     private Freelancer freelancer;
 
     @ManyToOne
-    @JoinColumn(name = "cliente_id")
+    @JoinColumn(name = "idcliente")
     private Cliente cliente;
 
     @ManyToOne
-    @JoinColumn(name = "trabajo_id")
+    @JoinColumn(name = "idtrabajo")
     private Trabajo trabajo;
 
     private String mensaje;
-    private Date fecha;
-    private double presupuesto;
+    private Double presupuesto;
 
     // Getters y setters
+
     public Long getId() {
         return id;
     }
@@ -66,19 +65,11 @@ public class Postulacion {
         this.mensaje = mensaje;
     }
 
-    public Date getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(Date fecha) {
-        this.fecha = fecha;
-    }
-
-    public double getPresupuesto() {
+    public Double getPresupuesto() {
         return presupuesto;
     }
 
-    public void setPresupuesto(double presupuesto) {
+    public void setPresupuesto(Double presupuesto) {
         this.presupuesto = presupuesto;
     }
 }

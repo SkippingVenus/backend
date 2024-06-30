@@ -1,35 +1,36 @@
-package com.softii.laborappbackend.dtos;
+package com.softii.laborappbackend.dto;
 
 public class PostulacionDTO {
-    private Long idfreelancer;
-    private Long idcliente;
-    private Long idtrabajo;
+    private Long freelancerId;
+    private Long clienteId;
+    private Long trabajoId;
     private String mensaje;
     private Double presupuesto;
+    private String imagenBase64;  // Agregar este campo
 
-    // Getters y Setters
-    public Long getIdfreelancer() {
-        return idfreelancer;
+    // Getters y setters
+    public Long getFreelancerId() {
+        return freelancerId;
     }
 
-    public void setIdfreelancer(Long idfreelancer) {
-        this.idfreelancer = idfreelancer;
+    public void setFreelancerId(Long freelancerId) {
+        this.freelancerId = freelancerId;
     }
 
-    public Long getIdcliente() {
-        return idcliente;
+    public Long getClienteId() {
+        return clienteId;
     }
 
-    public void setIdcliente(Long idcliente) {
-        this.idcliente = idcliente;
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
-    public Long getIdtrabajo() {
-        return idtrabajo;
+    public Long getTrabajoId() {
+        return trabajoId;
     }
 
-    public void setIdtrabajo(Long idtrabajo) {
-        this.idtrabajo = idtrabajo;
+    public void setTrabajoId(Long trabajoId) {
+        this.trabajoId = trabajoId;
     }
 
     public String getMensaje() {
@@ -46,5 +47,13 @@ public class PostulacionDTO {
 
     public void setPresupuesto(Double presupuesto) {
         this.presupuesto = presupuesto;
+    }
+
+    public String getImagenBase64() {
+        return imagenBase64;
+    }
+
+    public void setImagenBase64(String imagenBase64) {
+        this.imagenBase64 = imagenBase64;
     }
 }

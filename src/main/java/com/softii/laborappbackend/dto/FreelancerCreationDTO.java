@@ -6,19 +6,7 @@ public class FreelancerCreationDTO {
     private String descripcion;
     private String habilidades;
 
-    // Constructor vacío
-    public FreelancerCreationDTO() { }
-
-    // Constructor con parámetros
-    public FreelancerCreationDTO(Long idusuario, Float calificacion, String descripcion, String habilidades) {
-        this.idusuario = idusuario;
-        this.calificacion = calificacion;
-        this.descripcion = descripcion;
-        this.habilidades = habilidades;
-    }
-
     // Getters y setters
-
     public Long getIdusuario() {
         return idusuario;
     }

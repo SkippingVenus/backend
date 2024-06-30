@@ -1,6 +1,5 @@
 package com.softii.laborappbackend.controllers;
 
-import com.softii.laborappbackend.dto.ClienteCreationDTO;
 import com.softii.laborappbackend.entities.Cliente;
 import com.softii.laborappbackend.entities.Usuario;
 import com.softii.laborappbackend.repositories.ClienteRepository;
@@ -38,17 +37,15 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> crearCliente(@RequestBody ClienteCreationDTO clienteDTO) {
+    public ResponseEntity<Cliente> crearCliente(@RequestBody Cliente cliente) {
         try {
-            Optional<Usuario> usuarioOptional = usuarioRepository.findById(clienteDTO.getIdusuario());
-            if (usuarioOptional.isEmpty()) {
-                throw new jakarta.persistence.EntityNotFoundException("Usuario no encontrado con ID: " + clienteDTO.getIdusuario());
+            if (cliente.getUsuario() != null && cliente.getUsuario().getIdusuario() != null) {
+                Optional<Usuario> usuarioOptional = usuarioRepository.findById(cliente.getUsuario().getIdusuario());
+                if (usuarioOptional.isEmpty()) {
+                    throw new jakarta.persistence.EntityNotFoundException("Usuario no encontrado con ID: " + cliente.getUsuario().getIdusuario());
+                }
+                cliente.setUsuario(usuarioOptional.get());
             }
-
-            Usuario usuario = usuarioOptional.get();
-            Cliente cliente = new Cliente();
-            cliente.setUsuario(usuario);
-
             Cliente nuevoCliente = clienteRepository.save(cliente);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCliente);
         } catch (jakarta.persistence.EntityNotFoundException e) {
@@ -63,8 +60,7 @@ public class ClienteController {
         if (!clienteRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-
-        cliente.setIdcliente(id);
+        cliente.setIdcliente(id); // Aquí cambiamos a setIdcliente
         Cliente clienteActualizado = clienteRepository.save(cliente);
         return ResponseEntity.ok(clienteActualizado);
     }
@@ -74,7 +70,6 @@ public class ClienteController {
         if (!clienteRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-
         clienteRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,19 +1,24 @@
 package com.softii.laborappbackend.controllers;
 
-import com.softii.laborappbackend.dtos.PostulacionDTO;
-import com.softii.laborappbackend.entities.Postulacion;
-import com.softii.laborappbackend.entities.Freelancer;
+import com.softii.laborappbackend.dto.PostulacionDTO;
 import com.softii.laborappbackend.entities.Cliente;
+import com.softii.laborappbackend.entities.Freelancer;
+import com.softii.laborappbackend.entities.Postulacion;
 import com.softii.laborappbackend.entities.Trabajo;
-import com.softii.laborappbackend.repositories.PostulacionRepository;
-import com.softii.laborappbackend.repositories.FreelancerRepository;
 import com.softii.laborappbackend.repositories.ClienteRepository;
+import com.softii.laborappbackend.repositories.FreelancerRepository;
+import com.softii.laborappbackend.repositories.PostulacionRepository;
 import com.softii.laborappbackend.repositories.TrabajoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -33,52 +38,62 @@ public class PostulacionController {
     private TrabajoRepository trabajoRepository;
 
     @PostMapping
-    public Postulacion crearPostulacion(@RequestBody PostulacionDTO postulacionDTO) {
-        if (postulacionDTO.getIdfreelancer() == null) {
-            throw new IllegalArgumentException("Freelancer ID must not be null");
-        }
-        if (postulacionDTO.getIdcliente() == null) {
-            throw new IllegalArgumentException("Cliente ID must not be null");
-        }
-        if (postulacionDTO.getIdtrabajo() == null) {
-            throw new IllegalArgumentException("Trabajo ID must not be null");
+    @Transactional
+    public ResponseEntity<?> crearPostulacion(@RequestBody PostulacionDTO postulacionDTO) {
+        Optional<Freelancer> freelancerOptional = freelancerRepository.findByUsuario_Idusuario(postulacionDTO.getFreelancerId());
+        Optional<Cliente> clienteOptional = clienteRepository.findById(postulacionDTO.getClienteId());
+        Optional<Trabajo> trabajoOptional = trabajoRepository.findById(postulacionDTO.getTrabajoId());
+
+        if (freelancerOptional.isEmpty() || clienteOptional.isEmpty() || trabajoOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Freelancer, Cliente, or Trabajo not found.");
         }
 
-        // Obtener el freelancer, cliente y trabajo desde la base de datos
-        Optional<Freelancer> freelancerOpt = freelancerRepository.findById(postulacionDTO.getIdfreelancer());
-        Optional<Cliente> clienteOpt = clienteRepository.findById(postulacionDTO.getIdcliente());
-        Optional<Trabajo> trabajoOpt = trabajoRepository.findById(postulacionDTO.getIdtrabajo());
+        Freelancer freelancer = freelancerOptional.get();
+        Cliente cliente = clienteOptional.get();
+        Trabajo trabajo = trabajoOptional.get();
 
-        if (freelancerOpt.isPresent() && clienteOpt.isPresent() && trabajoOpt.isPresent()) {
-            Postulacion postulacion = new Postulacion();
-            postulacion.setFreelancer(freelancerOpt.get());
-            postulacion.setCliente(clienteOpt.get());
-            postulacion.setTrabajo(trabajoOpt.get());
-            postulacion.setMensaje(postulacionDTO.getMensaje());
-            postulacion.setPresupuesto(postulacionDTO.getPresupuesto());
-            return postulacionRepository.save(postulacion);
-        } else {
-            StringBuilder errorMessage = new StringBuilder("Freelancer, Cliente, or Trabajo not found. ");
-            if (!freelancerOpt.isPresent()) {
-                errorMessage.append("Freelancer not found. ");
-            }
-            if (!clienteOpt.isPresent()) {
-                errorMessage.append("Cliente not found. ");
-            }
-            if (!trabajoOpt.isPresent()) {
-                errorMessage.append("Trabajo not found. ");
-            }
-            throw new IllegalArgumentException(errorMessage.toString());
-        }
+        Postulacion postulacion = new Postulacion();
+        postulacion.setFreelancer(freelancer);
+        postulacion.setCliente(cliente);
+        postulacion.setTrabajo(trabajo);
+        postulacion.setMensaje(postulacionDTO.getMensaje());
+        postulacion.setPresupuesto(postulacionDTO.getPresupuesto());
+
+        postulacionRepository.save(postulacion);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Postulación creada exitosamente.");
     }
 
-    @GetMapping("/freelancer/{freelancerId}")
-    public List<Postulacion> getPostulacionesByFreelancerId(@PathVariable Long freelancerId) {
-        return postulacionRepository.findByFreelancer_Idfreelancer(freelancerId);
+    @Transactional
+    @GetMapping("/freelancer/{id}")
+    public ResponseEntity<List<PostulacionDTO>> obtenerPostulacionesPorFreelancer(@PathVariable Long id) {
+        List<Postulacion> postulaciones = postulacionRepository.findByFreelancer_Usuario_Idusuario(id);
+        if (postulaciones.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<PostulacionDTO> postulacionDTOs = postulaciones.stream().map(postulacion -> {
+            PostulacionDTO dto = new PostulacionDTO();
+            dto.setFreelancerId(postulacion.getFreelancer().getIdfreelancer());
+            dto.setClienteId(postulacion.getCliente().getIdcliente());
+            dto.setTrabajoId(postulacion.getTrabajo().getIdtrabajo());
+            dto.setMensaje(postulacion.getMensaje());
+            dto.setPresupuesto(postulacion.getPresupuesto());
+            dto.setImagenBase64(postulacion.getTrabajo().getImagenBase64());  // Añadir la imagen en Base64
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(postulacionDTOs);
     }
 
-    @GetMapping("/cliente/{clienteId}")
-    public List<Postulacion> getPostulacionesByClienteId(@PathVariable Long clienteId) {
-        return postulacionRepository.findByCliente_Idcliente(clienteId);
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> eliminarPostulacion(@PathVariable Long id) {
+        Optional<Postulacion> postulacionOptional = postulacionRepository.findById(id);
+        if (postulacionOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        postulacionRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
