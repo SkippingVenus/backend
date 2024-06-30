@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -79,7 +78,10 @@ public class PostulacionController {
             dto.setTrabajoId(postulacion.getTrabajo().getIdtrabajo());
             dto.setMensaje(postulacion.getMensaje());
             dto.setPresupuesto(postulacion.getPresupuesto());
-            dto.setImagenBase64(postulacion.getTrabajo().getImagenBase64());  // Añadir la imagen en Base64
+            dto.setImagenBase64(postulacion.getTrabajo().getImagenBase64());
+            dto.setTituloTrabajo(postulacion.getTrabajo().getTitulo());
+            dto.setDescripcionTrabajo(postulacion.getTrabajo().getDescripcion());
+            dto.setEstadoTrabajo(postulacion.getTrabajo().getEstado().name());
             return dto;
         }).collect(Collectors.toList());
 
@@ -89,11 +91,14 @@ public class PostulacionController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> eliminarPostulacion(@PathVariable Long id) {
+        System.out.println("Intentando eliminar postulación con ID: " + id); // Log para verificar el ID recibido
         Optional<Postulacion> postulacionOptional = postulacionRepository.findById(id);
         if (postulacionOptional.isEmpty()) {
+            System.out.println("Postulación con ID: " + id + " no encontrada."); // Log si no se encuentra la postulación
             return ResponseEntity.notFound().build();
         }
         postulacionRepository.deleteById(id);
+        System.out.println("Postulación con ID: " + id + " eliminada correctamente."); // Log para confirmar la eliminación
         return ResponseEntity.noContent().build();
     }
 }
