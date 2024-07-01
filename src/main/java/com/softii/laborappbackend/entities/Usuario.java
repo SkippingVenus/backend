@@ -1,35 +1,28 @@
 package com.softii.laborappbackend.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
+@Table(name = "usuarios")
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idusuario;
 
     private String nombre;
-
-    @Column(unique = true, nullable = false)
     private String correo;
-
-    @Column(nullable = false)
     private String contrasena;
+    private String rol;
+    private Integer edad;
+    private String sexo;
+    private String numero;
 
-    @Enumerated(EnumType.STRING)
-    private Rol rol;
+    @Lob
+    private byte[] imagen;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Freelancer> freelancers;
+    // Getters y Setters
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Cliente> clientes;
-
-    // Getters y setters
     public Long getIdusuario() {
         return idusuario;
     }
@@ -62,27 +55,43 @@ public class Usuario {
         this.contrasena = contrasena;
     }
 
-    public Rol getRol() {
+    public String getRol() {
         return rol;
     }
 
-    public void setRol(Rol rol) {
+    public void setRol(String rol) {
         this.rol = rol;
     }
 
-    public List<Freelancer> getFreelancers() {
-        return freelancers;
+    public Integer getEdad() {
+        return edad;
     }
 
-    public void setFreelancers(List<Freelancer> freelancers) {
-        this.freelancers = freelancers;
+    public void setEdad(Integer edad) {
+        this.edad = edad;
     }
 
-    public List<Cliente> getClientes() {
-        return clientes;
+    public String getSexo() {
+        return sexo;
     }
 
-    public void setClientes(List<Cliente> clientes) {
-        this.clientes = clientes;
+    public void setSexo(String sexo) {
+        this.sexo = sexo;
+    }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    public byte[] getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(byte[] imagen) {
+        this.imagen = imagen;
     }
 }

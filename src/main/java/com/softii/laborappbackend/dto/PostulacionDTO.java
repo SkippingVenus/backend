@@ -1,18 +1,41 @@
 package com.softii.laborappbackend.dto;
 
+import com.softii.laborappbackend.entities.Postulacion;
+import java.util.Base64;
+
 public class PostulacionDTO {
-    private Long id;  // Asegúrate de tener el ID de la postulación aquí
-    private Long freelancerId;
-    private Long clienteId;
+    private Long id;
     private Long trabajoId;
+    private Long clienteId;
+    private Long freelancerId;
     private String mensaje;
     private Double presupuesto;
-    private String imagenBase64;
     private String tituloTrabajo;
     private String descripcionTrabajo;
     private String estadoTrabajo;
+    private String imagenBase64;
+    private String nombreFreelancer;
 
-    // Getters y setters
+    public PostulacionDTO() {}
+
+    public PostulacionDTO(Postulacion postulacion) {
+        this.id = postulacion.getId();
+        this.trabajoId = postulacion.getTrabajo().getIdtrabajo();
+        this.clienteId = postulacion.getCliente().getIdcliente();
+        this.freelancerId = postulacion.getFreelancer().getIdfreelancer();
+        this.mensaje = postulacion.getMensaje();
+        this.presupuesto = postulacion.getPresupuesto();
+        this.tituloTrabajo = postulacion.getTrabajo().getTitulo();
+        this.descripcionTrabajo = postulacion.getTrabajo().getDescripcion();
+        this.estadoTrabajo = postulacion.getEstado().name();
+        this.nombreFreelancer = postulacion.getFreelancer().getUsuario().getNombre();
+        if (postulacion.getTrabajo().getImagen() != null) {
+            this.imagenBase64 = Base64.getEncoder().encodeToString(postulacion.getTrabajo().getImagen());
+        }
+    }
+
+    // Getters and setters for all fields
+
     public Long getId() {
         return id;
     }
@@ -21,12 +44,12 @@ public class PostulacionDTO {
         this.id = id;
     }
 
-    public Long getFreelancerId() {
-        return freelancerId;
+    public Long getTrabajoId() {
+        return trabajoId;
     }
 
-    public void setFreelancerId(Long freelancerId) {
-        this.freelancerId = freelancerId;
+    public void setTrabajoId(Long trabajoId) {
+        this.trabajoId = trabajoId;
     }
 
     public Long getClienteId() {
@@ -37,12 +60,12 @@ public class PostulacionDTO {
         this.clienteId = clienteId;
     }
 
-    public Long getTrabajoId() {
-        return trabajoId;
+    public Long getFreelancerId() {
+        return freelancerId;
     }
 
-    public void setTrabajoId(Long trabajoId) {
-        this.trabajoId = trabajoId;
+    public void setFreelancerId(Long freelancerId) {
+        this.freelancerId = freelancerId;
     }
 
     public String getMensaje() {
@@ -59,14 +82,6 @@ public class PostulacionDTO {
 
     public void setPresupuesto(Double presupuesto) {
         this.presupuesto = presupuesto;
-    }
-
-    public String getImagenBase64() {
-        return imagenBase64;
-    }
-
-    public void setImagenBase64(String imagenBase64) {
-        this.imagenBase64 = imagenBase64;
     }
 
     public String getTituloTrabajo() {
@@ -91,5 +106,21 @@ public class PostulacionDTO {
 
     public void setEstadoTrabajo(String estadoTrabajo) {
         this.estadoTrabajo = estadoTrabajo;
+    }
+
+    public String getImagenBase64() {
+        return imagenBase64;
+    }
+
+    public void setImagenBase64(String imagenBase64) {
+        this.imagenBase64 = imagenBase64;
+    }
+
+    public String getNombreFreelancer() {
+        return nombreFreelancer;
+    }
+
+    public void setNombreFreelancer(String nombreFreelancer) {
+        this.nombreFreelancer = nombreFreelancer;
     }
 }

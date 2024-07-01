@@ -1,11 +1,9 @@
 package com.softii.laborappbackend.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
+@Table(name = "cliente")
 public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,14 +13,9 @@ public class Cliente {
 
     @ManyToOne
     @JoinColumn(name = "idusuario")
-    @JsonBackReference
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Trabajo> trabajos;
-
-    // Getters y setters
+    // Getters y Setters
 
     public Long getIdcliente() {
         return idcliente;
@@ -46,13 +39,5 @@ public class Cliente {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
-    }
-
-    public List<Trabajo> getTrabajos() {
-        return trabajos;
-    }
-
-    public void setTrabajos(List<Trabajo> trabajos) {
-        this.trabajos = trabajos;
     }
 }

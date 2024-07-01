@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -37,26 +38,35 @@ public class TrabajoController {
 
     @PostMapping(consumes = { "multipart/form-data" })
     @Transactional
-    public ResponseEntity<?> crearTrabajo(@RequestPart("trabajoData") String trabajoData, @RequestPart("imagen") MultipartFile imagen) {
+    public ResponseEntity<?> crearTrabajo(@RequestPart("trabajoData") String trabajoData, @RequestPart(value = "imagen", required = false) MultipartFile imagen) {
         return saveOrUpdateTrabajo(null, trabajoData, imagen);
     }
 
     @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
     @Transactional
-    public ResponseEntity<?> actualizarTrabajo(@PathVariable Long id, @RequestPart("trabajoData") String trabajoData, @RequestPart("imagen") MultipartFile imagen) {
+    public ResponseEntity<?> actualizarTrabajo(@PathVariable Long id, @RequestPart("trabajoData") String trabajoData, @RequestPart(value = "imagen", required = false) MultipartFile imagen) {
         return saveOrUpdateTrabajo(id, trabajoData, imagen);
     }
 
     private ResponseEntity<?> saveOrUpdateTrabajo(Long id, String trabajoData, MultipartFile imagen) {
         try {
-            TrabajoCreationDTO trabajoDTO = new ObjectMapper().readValue(trabajoData, TrabajoCreationDTO.class);
+            ObjectMapper mapper = new ObjectMapper();
+            TrabajoCreationDTO trabajoDTO = mapper.readValue(trabajoData, TrabajoCreationDTO.class);
+
+            if (trabajoDTO.getIdcliente() == null) {
+                logger.error("ID del cliente es null");
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "ID del cliente no puede ser null"));
+            }
+
             EstadoTrabajo estadoTrabajo = EstadoTrabajo.valueOf(trabajoDTO.getEstado().toUpperCase());
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             Date fechaLimiteDate = formatter.parse(trabajoDTO.getFechaLimite());
 
-            Optional<Cliente> clienteOptional = clienteRepository.findById(trabajoDTO.getIdcliente());
+            logger.info("Buscando cliente con ID: {}", trabajoDTO.getIdcliente());
+            Optional<Cliente> clienteOptional = clienteRepository.findByUsuario_Idusuario(trabajoDTO.getIdcliente());
             if (clienteOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Cliente no encontrado"));
+                logger.error("Cliente no encontrado con ID: {}", trabajoDTO.getIdcliente());
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Cliente no encontrado con ID: " + trabajoDTO.getIdcliente()));
             }
             Cliente cliente = clienteOptional.get();
 
@@ -98,10 +108,7 @@ public class TrabajoController {
     @GetMapping
     public ResponseEntity<List<TrabajoDTO>> obtenerTodosLosTrabajos() {
         List<Trabajo> trabajos = trabajoRepository.findAll();
-        List<TrabajoDTO> trabajoDTOs = new ArrayList<>();
-        for (Trabajo trabajo : trabajos) {
-            trabajoDTOs.add(new TrabajoDTO(trabajo));
-        }
+        List<TrabajoDTO> trabajoDTOs = trabajos.stream().map(TrabajoDTO::new).collect(Collectors.toList());
         return ResponseEntity.ok(trabajoDTOs);
     }
 
@@ -121,10 +128,21 @@ public class TrabajoController {
     @Transactional(readOnly = true)
     public ResponseEntity<List<TrabajoDTO>> getTrabajosByClienteId(@PathVariable Long id) {
         List<Trabajo> trabajos = trabajoRepository.findByCliente_Idcliente(id);
-        List<TrabajoDTO> trabajoDTOs = new ArrayList<>();
-        for (Trabajo trabajo : trabajos) {
-            trabajoDTOs.add(new TrabajoDTO(trabajo));
+        List<TrabajoDTO> trabajoDTOs = trabajos.stream().map(TrabajoDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(trabajoDTOs);
+    }
+
+    @GetMapping("/estado/{estado}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getTrabajosByEstado(@PathVariable String estado) {
+        EstadoTrabajo estadoTrabajo;
+        try {
+            estadoTrabajo = EstadoTrabajo.valueOf(estado.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Estado de trabajo no válido"));
         }
+        List<Trabajo> trabajos = trabajoRepository.findByEstado(estadoTrabajo);
+        List<TrabajoDTO> trabajoDTOs = trabajos.stream().map(TrabajoDTO::new).collect(Collectors.toList());
         return ResponseEntity.ok(trabajoDTOs);
     }
 
@@ -137,6 +155,36 @@ public class TrabajoController {
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}/aprobar")
+    @Transactional
+    public ResponseEntity<?> aprobarTrabajo(@PathVariable Long id) {
+        Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
+        if (trabajoOptional.isPresent()) {
+            Trabajo trabajo = trabajoOptional.get();
+            trabajo.setEstado(EstadoTrabajo.APROBADO);
+            trabajoRepository.save(trabajo);
+            String mensaje = String.format("El trabajo fue aceptado para el cliente %s.", trabajo.getCliente().getNombre());
+            return ResponseEntity.ok(Collections.singletonMap("message", mensaje));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
+        }
+    }
+
+    @PutMapping("/{id}/desaprobar")
+    @Transactional
+    public ResponseEntity<?> desaprobarTrabajo(@PathVariable Long id) {
+        Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
+        if (trabajoOptional.isPresent()) {
+            Trabajo trabajo = trabajoOptional.get();
+            trabajo.setEstado(EstadoTrabajo.RECHAZADO);
+            trabajoRepository.save(trabajo);
+            String mensaje = String.format("El trabajo fue desaprobado para el cliente %s.", trabajo.getCliente().getNombre());
+            return ResponseEntity.ok(Collections.singletonMap("message", mensaje));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
         }
     }
 }

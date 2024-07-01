@@ -9,36 +9,34 @@ public class Postulacion {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "idfreelancer")
-    private Freelancer freelancer;
+    @JoinColumn(name = "trabajo_id")
+    private Trabajo trabajo;
 
     @ManyToOne
-    @JoinColumn(name = "idcliente")
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
     @ManyToOne
-    @JoinColumn(name = "idtrabajo")
-    private Trabajo trabajo;
+    @JoinColumn(name = "freelancer_id")
+    private Freelancer freelancer;
 
     private String mensaje;
     private Double presupuesto;
 
-    // Getters y setters
+    @Enumerated(EnumType.STRING)
+    private EstadoPropuesta estado;
 
+    // Getters and setters
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Trabajo getTrabajo() {
+        return trabajo;
     }
 
-    public Freelancer getFreelancer() {
-        return freelancer;
-    }
-
-    public void setFreelancer(Freelancer freelancer) {
-        this.freelancer = freelancer;
+    public void setTrabajo(Trabajo trabajo) {
+        this.trabajo = trabajo;
     }
 
     public Cliente getCliente() {
@@ -49,12 +47,12 @@ public class Postulacion {
         this.cliente = cliente;
     }
 
-    public Trabajo getTrabajo() {
-        return trabajo;
+    public Freelancer getFreelancer() {
+        return freelancer;
     }
 
-    public void setTrabajo(Trabajo trabajo) {
-        this.trabajo = trabajo;
+    public void setFreelancer(Freelancer freelancer) {
+        this.freelancer = freelancer;
     }
 
     public String getMensaje() {
@@ -71,5 +69,13 @@ public class Postulacion {
 
     public void setPresupuesto(Double presupuesto) {
         this.presupuesto = presupuesto;
+    }
+
+    public EstadoPropuesta getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoPropuesta estado) {
+        this.estado = estado;
     }
 }

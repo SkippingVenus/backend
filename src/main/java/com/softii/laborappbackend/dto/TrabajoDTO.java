@@ -15,6 +15,7 @@ public class TrabajoDTO {
     private String imagenUrl;
     private Long idcliente;
     private String nombreCliente;
+    private Long idusuario;  // Añadir idusuario
 
     public TrabajoDTO() {
     }
@@ -31,6 +32,7 @@ public class TrabajoDTO {
         this.imagenUrl = trabajo.getImagen() != null ? generarImagenUrl(trabajo.getIdtrabajo()) : null;
         this.idcliente = trabajo.getCliente().getIdcliente();
         this.nombreCliente = trabajo.getCliente().getNombre();
+        this.idusuario = trabajo.getCliente().getUsuario().getIdusuario();  // Añadir esta línea
     }
 
     // Getters y setters para todos los campos
@@ -121,6 +123,14 @@ public class TrabajoDTO {
 
     public void setNombreCliente(String nombreCliente) {
         this.nombreCliente = nombreCliente;
+    }
+
+    public Long getIdusuario() {
+        return idusuario;
+    }
+
+    public void setIdusuario(Long idusuario) {
+        this.idusuario = idusuario;
     }
 
     private String generarImagenUrl(Long trabajoId) {

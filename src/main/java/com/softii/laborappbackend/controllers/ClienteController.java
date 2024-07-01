@@ -1,5 +1,6 @@
 package com.softii.laborappbackend.controllers;
 
+import com.softii.laborappbackend.dto.ClienteCreationDTO;
 import com.softii.laborappbackend.entities.Cliente;
 import com.softii.laborappbackend.entities.Usuario;
 import com.softii.laborappbackend.repositories.ClienteRepository;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/clientes")
 public class ClienteController {
 
@@ -23,44 +23,53 @@ public class ClienteController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @PostMapping
+    public ResponseEntity<Cliente> crearCliente(@RequestBody ClienteCreationDTO clienteDTO) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(clienteDTO.getIdusuario());
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Cliente cliente = new Cliente();
+        cliente.setNombre(clienteDTO.getNombre());
+        cliente.setUsuario(usuarioOptional.get());
+
+        Cliente nuevoCliente = clienteRepository.save(cliente);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCliente);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Cliente> obtenerCliente(@PathVariable Long id) {
+        Optional<Cliente> clienteOptional = clienteRepository.findById(id);
+        if (clienteOptional.isPresent()) {
+            return ResponseEntity.ok(clienteOptional.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<Cliente>> obtenerTodosLosClientes() {
         List<Cliente> clientes = clienteRepository.findAll();
         return ResponseEntity.ok(clientes);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Cliente> obtenerClientePorId(@PathVariable Long id) {
-        Optional<Cliente> clienteOptional = clienteRepository.findById(id);
-        return clienteOptional.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<Cliente> crearCliente(@RequestBody Cliente cliente) {
-        try {
-            if (cliente.getUsuario() != null && cliente.getUsuario().getIdusuario() != null) {
-                Optional<Usuario> usuarioOptional = usuarioRepository.findById(cliente.getUsuario().getIdusuario());
-                if (usuarioOptional.isEmpty()) {
-                    throw new jakarta.persistence.EntityNotFoundException("Usuario no encontrado con ID: " + cliente.getUsuario().getIdusuario());
-                }
-                cliente.setUsuario(usuarioOptional.get());
-            }
-            Cliente nuevoCliente = clienteRepository.save(cliente);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCliente);
-        } catch (jakarta.persistence.EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
-        if (!clienteRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody ClienteCreationDTO clienteDTO) {
+        Optional<Cliente> clienteOptional = clienteRepository.findById(id);
+        if (!clienteOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        cliente.setIdcliente(id); // Aquí cambiamos a setIdcliente
+
+        Cliente cliente = clienteOptional.get();
+        cliente.setNombre(clienteDTO.getNombre());
+
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(clienteDTO.getIdusuario());
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        cliente.setUsuario(usuarioOptional.get());
+
         Cliente clienteActualizado = clienteRepository.save(cliente);
         return ResponseEntity.ok(clienteActualizado);
     }
@@ -68,8 +77,9 @@ public class ClienteController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarCliente(@PathVariable Long id) {
         if (!clienteRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+
         clienteRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

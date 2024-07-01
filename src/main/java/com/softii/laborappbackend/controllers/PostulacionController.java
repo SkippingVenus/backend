@@ -2,6 +2,7 @@ package com.softii.laborappbackend.controllers;
 
 import com.softii.laborappbackend.dto.PostulacionDTO;
 import com.softii.laborappbackend.entities.Cliente;
+import com.softii.laborappbackend.entities.EstadoPropuesta;
 import com.softii.laborappbackend.entities.Freelancer;
 import com.softii.laborappbackend.entities.Postulacion;
 import com.softii.laborappbackend.entities.Trabajo;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,12 +41,22 @@ public class PostulacionController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> crearPostulacion(@RequestBody PostulacionDTO postulacionDTO) {
-        Optional<Freelancer> freelancerOptional = freelancerRepository.findByUsuario_Idusuario(postulacionDTO.getFreelancerId());
+        System.out.println("Freelancer ID: " + postulacionDTO.getFreelancerId());
+        System.out.println("Cliente ID: " + postulacionDTO.getClienteId());
+        System.out.println("Trabajo ID: " + postulacionDTO.getTrabajoId());
+
+        Optional<Freelancer> freelancerOptional = freelancerRepository.findById(postulacionDTO.getFreelancerId());
         Optional<Cliente> clienteOptional = clienteRepository.findById(postulacionDTO.getClienteId());
         Optional<Trabajo> trabajoOptional = trabajoRepository.findById(postulacionDTO.getTrabajoId());
 
-        if (freelancerOptional.isEmpty() || clienteOptional.isEmpty() || trabajoOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Freelancer, Cliente, or Trabajo not found.");
+        if (freelancerOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Freelancer not found with ID: " + postulacionDTO.getFreelancerId()));
+        }
+        if (clienteOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Cliente not found with ID: " + postulacionDTO.getClienteId()));
+        }
+        if (trabajoOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Trabajo not found with ID: " + postulacionDTO.getTrabajoId()));
         }
 
         Freelancer freelancer = freelancerOptional.get();
@@ -57,13 +69,13 @@ public class PostulacionController {
         postulacion.setTrabajo(trabajo);
         postulacion.setMensaje(postulacionDTO.getMensaje());
         postulacion.setPresupuesto(postulacionDTO.getPresupuesto());
+        postulacion.setEstado(EstadoPropuesta.EN_REVISION);
 
         postulacionRepository.save(postulacion);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Postulación creada exitosamente.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Collections.singletonMap("message", "Postulación creada exitosamente."));
     }
 
-    @Transactional
     @GetMapping("/freelancer/{id}")
     public ResponseEntity<List<PostulacionDTO>> obtenerPostulacionesPorFreelancer(@PathVariable Long id) {
         List<Postulacion> postulaciones = postulacionRepository.findByFreelancer_Usuario_Idusuario(id);
@@ -71,34 +83,76 @@ public class PostulacionController {
             return ResponseEntity.noContent().build();
         }
 
-        List<PostulacionDTO> postulacionDTOs = postulaciones.stream().map(postulacion -> {
-            PostulacionDTO dto = new PostulacionDTO();
-            dto.setFreelancerId(postulacion.getFreelancer().getIdfreelancer());
-            dto.setClienteId(postulacion.getCliente().getIdcliente());
-            dto.setTrabajoId(postulacion.getTrabajo().getIdtrabajo());
-            dto.setMensaje(postulacion.getMensaje());
-            dto.setPresupuesto(postulacion.getPresupuesto());
-            dto.setImagenBase64(postulacion.getTrabajo().getImagenBase64());
-            dto.setTituloTrabajo(postulacion.getTrabajo().getTitulo());
-            dto.setDescripcionTrabajo(postulacion.getTrabajo().getDescripcion());
-            dto.setEstadoTrabajo(postulacion.getTrabajo().getEstado().name());
-            return dto;
-        }).collect(Collectors.toList());
-
+        List<PostulacionDTO> postulacionDTOs = postulaciones.stream().map(PostulacionDTO::new).collect(Collectors.toList());
         return ResponseEntity.ok(postulacionDTOs);
     }
 
+    @GetMapping("/estado/enviada")
+    public ResponseEntity<List<PostulacionDTO>> obtenerPostulacionesEnviadas() {
+        List<Postulacion> postulaciones = postulacionRepository.findByEstado(EstadoPropuesta.ENVIADA);
+        if (postulaciones.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        List<PostulacionDTO> postulacionDTOs = postulaciones.stream().map(PostulacionDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(postulacionDTOs);
+    }
+
+    @GetMapping("/estado/revision")
+    public ResponseEntity<List<PostulacionDTO>> obtenerPostulacionesEnRevision() {
+        List<Postulacion> postulaciones = postulacionRepository.findByEstado(EstadoPropuesta.EN_REVISION);
+        if (postulaciones.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        List<PostulacionDTO> postulacionDTOs = postulaciones.stream().map(PostulacionDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(postulacionDTOs);
+    }
+
+    @PutMapping("/{id}/enviar")
+    public ResponseEntity<?> enviarPostulacion(@PathVariable Long id) {
+        Optional<Postulacion> postulacionOptional = postulacionRepository.findById(id);
+        if (postulacionOptional.isPresent()) {
+            Postulacion postulacion = postulacionOptional.get();
+            postulacion.setEstado(EstadoPropuesta.ENVIADA);
+            postulacionRepository.save(postulacion);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Postulación enviada exitosamente."));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Postulación no encontrada."));
+        }
+    }
+
+    @PutMapping("/{id}/aprobar")
+    public ResponseEntity<?> aprobarPostulacion(@PathVariable Long id) {
+        Optional<Postulacion> postulacionOptional = postulacionRepository.findById(id);
+        if (postulacionOptional.isPresent()) {
+            Postulacion postulacion = postulacionOptional.get();
+            postulacion.setEstado(EstadoPropuesta.ENVIADA);
+            postulacionRepository.save(postulacion);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Postulación aprobada exitosamente."));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Postulación no encontrada."));
+        }
+    }
+
+    @PutMapping("/{id}/desaprobar")
+    public ResponseEntity<?> desaprobarPostulacion(@PathVariable Long id) {
+        Optional<Postulacion> postulacionOptional = postulacionRepository.findById(id);
+        if (postulacionOptional.isPresent()) {
+            Postulacion postulacion = postulacionOptional.get();
+            postulacion.setEstado(EstadoPropuesta.RECHAZADA);
+            postulacionRepository.save(postulacion);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Postulación desaprobada exitosamente."));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Postulación no encontrada."));
+        }
+    }
+
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<Void> eliminarPostulacion(@PathVariable Long id) {
-        System.out.println("Intentando eliminar postulación con ID: " + id); // Log para verificar el ID recibido
         Optional<Postulacion> postulacionOptional = postulacionRepository.findById(id);
         if (postulacionOptional.isEmpty()) {
-            System.out.println("Postulación con ID: " + id + " no encontrada."); // Log si no se encuentra la postulación
             return ResponseEntity.notFound().build();
         }
         postulacionRepository.deleteById(id);
-        System.out.println("Postulación con ID: " + id + " eliminada correctamente."); // Log para confirmar la eliminación
         return ResponseEntity.noContent().build();
     }
 }

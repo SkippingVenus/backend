@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/freelancers")
 public class FreelancerController {
 
@@ -24,50 +23,57 @@ public class FreelancerController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @PostMapping
+    public ResponseEntity<Freelancer> crearFreelancer(@RequestBody FreelancerCreationDTO freelancerDTO) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(freelancerDTO.getIdusuario());
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Freelancer freelancer = new Freelancer();
+        freelancer.setUsuario(usuarioOptional.get());
+        freelancer.setCalificacion(freelancerDTO.getCalificacion());
+        freelancer.setDescripcion(freelancerDTO.getDescripcion());
+        freelancer.setHabilidades(freelancerDTO.getHabilidades());
+
+        Freelancer nuevoFreelancer = freelancerRepository.save(freelancer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoFreelancer);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Freelancer> obtenerFreelancer(@PathVariable Long id) {
+        Optional<Freelancer> freelancerOptional = freelancerRepository.findById(id);
+        if (freelancerOptional.isPresent()) {
+            return ResponseEntity.ok(freelancerOptional.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<Freelancer>> obtenerTodosLosFreelancers() {
         List<Freelancer> freelancers = freelancerRepository.findAll();
         return ResponseEntity.ok(freelancers);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Freelancer> obtenerFreelancerPorId(@PathVariable Long id) {
-        Optional<Freelancer> freelancerOptional = freelancerRepository.findById(id);
-        return freelancerOptional.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<Freelancer> crearFreelancer(@RequestBody FreelancerCreationDTO freelancerDTO) {
-        try {
-            Optional<Usuario> usuarioOptional = usuarioRepository.findById(freelancerDTO.getIdusuario());
-            if (usuarioOptional.isEmpty()) {
-                throw new jakarta.persistence.EntityNotFoundException("Usuario no encontrado con ID: " + freelancerDTO.getIdusuario());
-            }
-
-            Usuario usuario = usuarioOptional.get();
-            Freelancer nuevoFreelancer = new Freelancer();
-            nuevoFreelancer.setUsuario(usuario);
-            nuevoFreelancer.setCalificacion(freelancerDTO.getCalificacion());
-            nuevoFreelancer.setDescripcion(freelancerDTO.getDescripcion());
-            nuevoFreelancer.setHabilidades(freelancerDTO.getHabilidades());
-
-            Freelancer freelancerGuardado = freelancerRepository.save(nuevoFreelancer);
-            return ResponseEntity.status(HttpStatus.CREATED).body(freelancerGuardado);
-        } catch (jakarta.persistence.EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
     @PutMapping("/{id}")
-    public ResponseEntity<Freelancer> actualizarFreelancer(@PathVariable Long id, @RequestBody Freelancer freelancer) {
-        if (!freelancerRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<Freelancer> actualizarFreelancer(@PathVariable Long id, @RequestBody FreelancerCreationDTO freelancerDTO) {
+        Optional<Freelancer> freelancerOptional = freelancerRepository.findById(id);
+        if (!freelancerOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        freelancer.setIdfreelancer(id);
+        Freelancer freelancer = freelancerOptional.get();
+        freelancer.setCalificacion(freelancerDTO.getCalificacion());
+        freelancer.setDescripcion(freelancerDTO.getDescripcion());
+        freelancer.setHabilidades(freelancerDTO.getHabilidades());
+
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(freelancerDTO.getIdusuario());
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        freelancer.setUsuario(usuarioOptional.get());
+
         Freelancer freelancerActualizado = freelancerRepository.save(freelancer);
         return ResponseEntity.ok(freelancerActualizado);
     }
@@ -75,7 +81,7 @@ public class FreelancerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarFreelancer(@PathVariable Long id) {
         if (!freelancerRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
         freelancerRepository.deleteById(id);

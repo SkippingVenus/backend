@@ -1,5 +1,8 @@
 package com.softii.laborappbackend.entities;
 
 public enum EstadoTrabajo {
-    ABIERTO, EN_PROCESO, FINALIZADO, CANCELADO
+    EN_REVISION,
+    APROBADO,
+    RECHAZADO,
+    COMPLETADO
 }

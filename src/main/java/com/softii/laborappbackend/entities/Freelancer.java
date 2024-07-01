@@ -15,8 +15,6 @@ public class Freelancer {
     private Usuario usuario;
 
     private Float calificacion;
-
-    // Otros campos relevantes
     private String descripcion;
     private String habilidades;
 
