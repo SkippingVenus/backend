@@ -192,7 +192,7 @@ public class UsuarioController {
         return ResponseEntity.ok("{\"message\": \"Perfil actualizado exitosamente\"}");
     }
 
-    @GetMapping("/perfil/{id}")
+    @GetMapping("/perfilfreelancer/{id}")
     public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long id) {
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
         if (!usuarioOptional.isPresent()) {
@@ -210,8 +210,14 @@ public class UsuarioController {
         perfilDTO.setNombre(usuario.getNombre());
         perfilDTO.setEdad(usuario.getEdad());
         perfilDTO.setSexo(usuario.getSexo());
-        perfilDTO.setImagen(Base64.getEncoder().encodeToString(usuario.getImagen()));
+
+        if (usuario.getImagen() != null) {
+            perfilDTO.setImagen(Base64.getEncoder().encodeToString(usuario.getImagen()));
+        } else {
+            perfilDTO.setImagen(null);
+        }
 
         return ResponseEntity.ok(perfilDTO);
     }
+
 }
