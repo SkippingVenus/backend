@@ -2,7 +2,9 @@ package com.softii.laborappbackend.entities;
 
 public enum EstadoTrabajo {
     EN_REVISION,
-    APROBADO,
+    PUBLICADO,
     RECHAZADO,
-    COMPLETADO
+    ACEPTADO,
+    EN_PROCESO,
+    FINALIZADO
 }

@@ -1,27 +1,16 @@
 package com.softii.laborappbackend.dto;
 
-import java.time.LocalDate;
-
 public class TrabajoCreationDTO {
-    private Long idcliente;
     private String titulo;
     private String descripcion;
     private String categoria;
     private String ubicacion;
-    private LocalDate fechaLimite;
+    private String fechaLimite;
     private String estado;
-    private float presupuesto;
+    private double presupuesto;
+    private Long idcliente;
 
-    // Getters and Setters
-
-    public Long getIdcliente() {
-        return idcliente;
-    }
-
-    public void setIdcliente(Long idcliente) {
-        this.idcliente = idcliente;
-    }
-
+    // Getters y setters
     public String getTitulo() {
         return titulo;
     }
@@ -54,11 +43,11 @@ public class TrabajoCreationDTO {
         this.ubicacion = ubicacion;
     }
 
-    public LocalDate getFechaLimite() {
+    public String getFechaLimite() {
         return fechaLimite;
     }
 
-    public void setFechaLimite(LocalDate fechaLimite) {
+    public void setFechaLimite(String fechaLimite) {
         this.fechaLimite = fechaLimite;
     }
 
@@ -70,11 +59,19 @@ public class TrabajoCreationDTO {
         this.estado = estado;
     }
 
-    public float getPresupuesto() {
+    public double getPresupuesto() {
         return presupuesto;
     }
 
-    public void setPresupuesto(float presupuesto) {
+    public void setPresupuesto(double presupuesto) {
         this.presupuesto = presupuesto;
+    }
+
+    public Long getIdcliente() {
+        return idcliente;
+    }
+
+    public void setIdcliente(Long idcliente) {
+        this.idcliente = idcliente;
     }
 }

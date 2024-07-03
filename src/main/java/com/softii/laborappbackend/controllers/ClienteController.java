@@ -54,6 +54,16 @@ public class ClienteController {
         return ResponseEntity.ok(clientes);
     }
 
+    @GetMapping("/usuario/{idusuario}")
+    public ResponseEntity<Cliente> obtenerClientePorIdUsuario(@PathVariable Long idusuario) {
+        Optional<Cliente> clienteOptional = clienteRepository.findByUsuario_Idusuario(idusuario);
+        if (clienteOptional.isPresent()) {
+            return ResponseEntity.ok(clienteOptional.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody ClienteCreationDTO clienteDTO) {
         Optional<Cliente> clienteOptional = clienteRepository.findById(id);

@@ -10,5 +10,5 @@ import java.util.List;
 public interface TrabajoRepository extends JpaRepository<Trabajo, Long> {
     List<Trabajo> findByCliente_Idcliente(Long idCliente);
     List<Trabajo> findByEstado(EstadoTrabajo estado);
-
+    List<Trabajo> findByEstadoAndCliente_Idcliente(EstadoTrabajo estado, Long clienteId);
 }

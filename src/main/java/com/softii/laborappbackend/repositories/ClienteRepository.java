@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    Optional<Cliente> findByUsuario_Idusuario(Long idusuario);
+    Optional<Cliente> findByUsuario_Idusuario(Long idusuario); // Método para encontrar cliente por usuario.idusuario
 }

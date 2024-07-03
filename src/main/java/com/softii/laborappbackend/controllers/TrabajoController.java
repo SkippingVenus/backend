@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -58,17 +60,22 @@ public class TrabajoController {
                 return ResponseEntity.badRequest().body(Collections.singletonMap("error", "ID del cliente no puede ser null"));
             }
 
-            EstadoTrabajo estadoTrabajo = EstadoTrabajo.valueOf(trabajoDTO.getEstado().toUpperCase());
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            Date fechaLimiteDate = formatter.parse(trabajoDTO.getFechaLimite());
+            logger.info("ID Usuario: {}", trabajoDTO.getIdcliente()); // Log ID Usuario
 
-            logger.info("Buscando cliente con ID: {}", trabajoDTO.getIdcliente());
+            // Buscar cliente por idusuario
             Optional<Cliente> clienteOptional = clienteRepository.findByUsuario_Idusuario(trabajoDTO.getIdcliente());
             if (clienteOptional.isEmpty()) {
-                logger.error("Cliente no encontrado con ID: {}", trabajoDTO.getIdcliente());
-                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Cliente no encontrado con ID: " + trabajoDTO.getIdcliente()));
+                logger.error("Cliente no encontrado con ID de usuario: {}", trabajoDTO.getIdcliente());
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Cliente no encontrado con ID de usuario: " + trabajoDTO.getIdcliente()));
             }
             Cliente cliente = clienteOptional.get();
+
+            EstadoTrabajo estadoTrabajo = EstadoTrabajo.valueOf(trabajoDTO.getEstado().toUpperCase());
+
+            // Decodificar la cadena de fecha antes de analizarla
+            String decodedFecha = URLDecoder.decode(trabajoDTO.getFechaLimite(), StandardCharsets.UTF_8.toString());
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"); // Cambiado para incluir fecha y hora
+            Date fechaLimiteDate = formatter.parse(decodedFecha);
 
             Trabajo trabajo;
             if (id == null) {
@@ -134,17 +141,29 @@ public class TrabajoController {
 
     @GetMapping("/estado/{estado}")
     @Transactional(readOnly = true)
-    public ResponseEntity<?> getTrabajosByEstado(@PathVariable String estado) {
+    public ResponseEntity<?> getTrabajosByEstado(@PathVariable String estado, @RequestParam(required = false) Long clienteId) {
+        logger.info("Request received for estado: {} with clienteId: {}", estado, clienteId); // Log para depuración
         EstadoTrabajo estadoTrabajo;
         try {
             estadoTrabajo = EstadoTrabajo.valueOf(estado.toUpperCase());
         } catch (IllegalArgumentException e) {
+            logger.error("Invalid estado: {}", estado, e);
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Estado de trabajo no válido"));
         }
-        List<Trabajo> trabajos = trabajoRepository.findByEstado(estadoTrabajo);
+
+        List<Trabajo> trabajos;
+        if (clienteId != null) {
+            trabajos = trabajoRepository.findByEstadoAndCliente_Idcliente(estadoTrabajo, clienteId);
+        } else {
+            trabajos = trabajoRepository.findByEstado(estadoTrabajo);
+        }
+
         List<TrabajoDTO> trabajoDTOs = trabajos.stream().map(TrabajoDTO::new).collect(Collectors.toList());
         return ResponseEntity.ok(trabajoDTOs);
     }
+
+
+
 
     @DeleteMapping("/{id}")
     @Transactional
@@ -164,7 +183,7 @@ public class TrabajoController {
         Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
         if (trabajoOptional.isPresent()) {
             Trabajo trabajo = trabajoOptional.get();
-            trabajo.setEstado(EstadoTrabajo.APROBADO);
+            trabajo.setEstado(EstadoTrabajo.PUBLICADO);
             trabajoRepository.save(trabajo);
             String mensaje = String.format("El trabajo fue aceptado para el cliente %s.", trabajo.getCliente().getNombre());
             return ResponseEntity.ok(Collections.singletonMap("message", mensaje));
