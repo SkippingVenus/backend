@@ -3,6 +3,9 @@ package com.softii.laborappbackend.controllers;
 import com.softii.laborappbackend.dto.UsuarioCreationDTO;
 import com.softii.laborappbackend.entities.Cliente;
 import com.softii.laborappbackend.entities.Usuario;
+import com.softii.laborappbackend.dto.PerfilDTO;
+import com.softii.laborappbackend.entities.Freelancer;
+import com.softii.laborappbackend.repositories.FreelancerRepository;
 import com.softii.laborappbackend.repositories.ClienteRepository;
 import com.softii.laborappbackend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Base64;
 import java.util.Optional;
 
 @RestController
@@ -28,6 +32,9 @@ public class UsuarioController {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private FreelancerRepository freelancerRepository;
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> login(@RequestBody Usuario loginData) {
@@ -156,5 +163,55 @@ public class UsuarioController {
 
         usuarioRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarPerfil(@PathVariable Long id, @RequestBody PerfilDTO perfilDTO) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Usuario usuario = usuarioOptional.get();
+        usuario.setCorreo(perfilDTO.getCorreo());
+        usuario.setContrasena(perfilDTO.getContrasena());
+        usuario.setNumero(perfilDTO.getNumero());
+        usuario.setNombre(perfilDTO.getNombre());
+
+        // Verificar si perfilDTO.getImagen() no es null ni vacío
+        if (perfilDTO.getImagen() != null && !perfilDTO.getImagen().isEmpty()) {
+            usuario.setImagen(Base64.getDecoder().decode(perfilDTO.getImagen()));
+        }
+        usuarioRepository.save(usuario);
+
+        Freelancer freelancer = freelancerRepository.findByUsuario_Idusuario(id);
+        if (freelancer != null) {
+            freelancer.setHabilidades(perfilDTO.getHabilidades());
+            freelancerRepository.save(freelancer);
+        }
+
+        return ResponseEntity.ok("{\"message\": \"Perfil actualizado exitosamente\"}");
+    }
+
+    @GetMapping("/perfil/{id}")
+    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long id) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Usuario usuario = usuarioOptional.get();
+        Freelancer freelancer = freelancerRepository.findByUsuario_Idusuario(id);
+
+        PerfilDTO perfilDTO = new PerfilDTO();
+        perfilDTO.setCorreo(usuario.getCorreo());
+        perfilDTO.setContrasena(usuario.getContrasena());
+        perfilDTO.setNumero(usuario.getNumero());
+        perfilDTO.setHabilidades(freelancer != null ? freelancer.getHabilidades() : "");
+        perfilDTO.setNombre(usuario.getNombre());
+        perfilDTO.setEdad(usuario.getEdad());
+        perfilDTO.setSexo(usuario.getSexo());
+        perfilDTO.setImagen(Base64.getEncoder().encodeToString(usuario.getImagen()));
+
+        return ResponseEntity.ok(perfilDTO);
     }
 }

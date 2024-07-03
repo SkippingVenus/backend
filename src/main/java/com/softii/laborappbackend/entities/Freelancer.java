@@ -1,6 +1,5 @@
 package com.softii.laborappbackend.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,14 +8,13 @@ public class Freelancer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idfreelancer;
 
-    @ManyToOne
-    @JoinColumn(name = "idusuario")
-    @JsonBackReference
-    private Usuario usuario;
-
     private Float calificacion;
     private String descripcion;
     private String habilidades;
+
+    @OneToOne
+    @JoinColumn(name = "idusuario")
+    private Usuario usuario;
 
     // Getters y setters
     public Long getIdfreelancer() {
@@ -25,14 +23,6 @@ public class Freelancer {
 
     public void setIdfreelancer(Long idfreelancer) {
         this.idfreelancer = idfreelancer;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
     }
 
     public Float getCalificacion() {
@@ -57,5 +47,13 @@ public class Freelancer {
 
     public void setHabilidades(String habilidades) {
         this.habilidades = habilidades;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }
