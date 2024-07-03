@@ -35,4 +35,15 @@ public class PostulacionController {
         List<Postulacion> postulaciones = postulacionRepository.findAll();
         return ResponseEntity.ok(postulaciones);
     }
+    @GetMapping("/freelancer/{idfreelancer}")
+    public ResponseEntity<List<Postulacion>> getPostulacionesByFreelancer(@PathVariable Long idfreelancer) {
+        List<Postulacion> postulaciones = postulacionRepository.findByFreelancerIdfreelancer(idfreelancer);
+        return ResponseEntity.ok(postulaciones);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarPostulacion(@PathVariable Long id) {
+        postulacionRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
 }
