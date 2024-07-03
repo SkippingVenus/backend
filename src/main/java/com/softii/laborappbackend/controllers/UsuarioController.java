@@ -210,6 +210,7 @@ public class UsuarioController {
         perfilDTO.setNombre(usuario.getNombre());
         perfilDTO.setEdad(usuario.getEdad());
         perfilDTO.setSexo(usuario.getSexo());
+        perfilDTO.setIdfreelancer(freelancer != null ? freelancer.getIdfreelancer() : null);
 
         if (usuario.getImagen() != null) {
             perfilDTO.setImagen(Base64.getEncoder().encodeToString(usuario.getImagen()));
@@ -219,5 +220,6 @@ public class UsuarioController {
 
         return ResponseEntity.ok(perfilDTO);
     }
+
 
 }

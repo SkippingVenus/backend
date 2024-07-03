@@ -9,9 +9,17 @@ public class PerfilDTO {
     private int edad;
     private String sexo;
     private String imagen;  // Almacenar la imagen como una cadena base64
+    private Long idfreelancer; // Añade este campo
 
     // Getters y setters para todos los campos
 
+    public Long getIdfreelancer() {
+        return idfreelancer;
+    }
+
+    public void setIdfreelancer(Long idfreelancer) {
+        this.idfreelancer = idfreelancer;
+    }
     public String getCorreo() {
         return correo;
     }

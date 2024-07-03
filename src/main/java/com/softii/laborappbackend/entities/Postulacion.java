@@ -22,6 +22,7 @@ public class Postulacion {
 
     private String mensaje;
     private Double presupuesto;
+    private String disponibilidad;  // Nuevo campo
 
     @Enumerated(EnumType.STRING)
     private EstadoPropuesta estado;
@@ -69,6 +70,14 @@ public class Postulacion {
 
     public void setPresupuesto(Double presupuesto) {
         this.presupuesto = presupuesto;
+    }
+
+    public String getDisponibilidad() {  // Nuevo getter
+        return disponibilidad;
+    }
+
+    public void setDisponibilidad(String disponibilidad) {  // Nuevo setter
+        this.disponibilidad = disponibilidad;
     }
 
     public EstadoPropuesta getEstado() {

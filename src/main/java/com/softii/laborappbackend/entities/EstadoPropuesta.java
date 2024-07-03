@@ -1,7 +1,7 @@
 package com.softii.laborappbackend.entities;
 
 public enum EstadoPropuesta {
-    EN_REVISION,
+    PENDIENTE,
     ENVIADA,
     ACEPTADA,
     RECHAZADA
