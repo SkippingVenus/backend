@@ -22,12 +22,12 @@ public class Trabajo {
     @Enumerated(EnumType.STRING)
     private EstadoTrabajo estado;
 
-    private Double presupuesto;  // Cambiado a Double
+    private Double presupuesto;
 
     @Lob
     private byte[] imagen;
 
-    // Getters and Setters
+    // Getters y Setters
     public Long getIdtrabajo() {
         return idtrabajo;
     }

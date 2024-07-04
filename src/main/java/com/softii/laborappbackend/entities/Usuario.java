@@ -22,7 +22,6 @@ public class Usuario {
     private byte[] imagen;
 
     // Getters y Setters
-
     public Long getIdusuario() {
         return idusuario;
     }

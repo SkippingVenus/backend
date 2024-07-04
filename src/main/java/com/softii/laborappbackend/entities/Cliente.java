@@ -16,7 +16,6 @@ public class Cliente {
     private Usuario usuario;
 
     // Getters y Setters
-
     public Long getIdcliente() {
         return idcliente;
     }

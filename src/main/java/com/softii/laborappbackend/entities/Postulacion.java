@@ -22,12 +22,12 @@ public class Postulacion {
 
     private String mensaje;
     private Double presupuesto;
-    private String disponibilidad;  // Nuevo campo
+    private String disponibilidad;
 
     @Enumerated(EnumType.STRING)
     private EstadoPropuesta estado;
 
-    // Getters and setters
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -72,11 +72,11 @@ public class Postulacion {
         this.presupuesto = presupuesto;
     }
 
-    public String getDisponibilidad() {  // Nuevo getter
+    public String getDisponibilidad() {
         return disponibilidad;
     }
 
-    public void setDisponibilidad(String disponibilidad) {  // Nuevo setter
+    public void setDisponibilidad(String disponibilidad) {
         this.disponibilidad = disponibilidad;
     }
 
