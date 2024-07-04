@@ -1,19 +1,14 @@
 package com.softii.laborappbackend.controllers;
 
-import com.softii.laborappbackend.entities.EstadoPropuesta;
-import com.softii.laborappbackend.entities.EstadoTrabajo;
-import com.softii.laborappbackend.entities.Postulacion;
-import com.softii.laborappbackend.entities.Trabajo;
-import com.softii.laborappbackend.entities.Usuario;
-import com.softii.laborappbackend.repositories.PostulacionRepository;
-import com.softii.laborappbackend.repositories.UsuarioRepository;
-import com.softii.laborappbackend.repositories.TrabajoRepository;
+import com.softii.laborappbackend.entities.*;
+import com.softii.laborappbackend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/postulaciones")
@@ -27,6 +22,9 @@ public class PostulacionController {
 
     @Autowired
     private TrabajoRepository trabajoRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @PostMapping
     public ResponseEntity<?> crearPostulacion(@RequestBody Postulacion postulacion) {
@@ -48,7 +46,27 @@ public class PostulacionController {
     @GetMapping("/freelancer/{idfreelancer}")
     public ResponseEntity<List<Postulacion>> getPostulacionesByFreelancer(@PathVariable Long idfreelancer) {
         List<Postulacion> postulaciones = postulacionRepository.findByFreelancer_Idfreelancer(idfreelancer);
+        for (Postulacion postulacion : postulaciones) {
+            Trabajo trabajo = postulacion.getTrabajo();
+            if (trabajo != null) {
+                Cliente cliente = trabajo.getCliente();
+                if (cliente != null) {
+                    cliente.getIdcliente(); // Asegúrate de que este método esté definido en la entidad Cliente
+                }
+            }
+        }
         return ResponseEntity.ok(postulaciones);
+    }
+
+    @GetMapping("/cliente/{clienteId}/detalle")
+    public ResponseEntity<Usuario> getClienteDetalle(@PathVariable Long clienteId) {
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        Usuario usuario = cliente.getUsuario(); // Obtenemos el usuario directamente del cliente
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        return ResponseEntity.ok(usuario);
     }
 
     @GetMapping("/trabajo/{trabajoId}")
@@ -101,11 +119,14 @@ public class PostulacionController {
 
         return ResponseEntity.ok().build();
     }
-    @GetMapping("/cliente/{clienteId}/detalle")
-    public ResponseEntity<Usuario> getClienteDetalle(@PathVariable Long clienteId) {
-        Usuario cliente = usuarioRepository.findById(clienteId)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return ResponseEntity.ok(cliente);
+    @PostMapping("/{id}/actualizar-estado")
+    public ResponseEntity<?> actualizarEstadoPropuesta(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        Postulacion postulacion = postulacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Propuesta no encontrada"));
+        String nuevoEstado = request.get("estado");
+        postulacion.setEstado(EstadoPropuesta.valueOf(nuevoEstado));
+        postulacionRepository.save(postulacion);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/rechazar")
