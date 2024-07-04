@@ -1,10 +1,13 @@
 package com.softii.laborappbackend.controllers;
 
 import com.softii.laborappbackend.entities.EstadoPropuesta;
+import com.softii.laborappbackend.entities.EstadoTrabajo;
 import com.softii.laborappbackend.entities.Postulacion;
+import com.softii.laborappbackend.entities.Trabajo;
 import com.softii.laborappbackend.entities.Usuario;
 import com.softii.laborappbackend.repositories.PostulacionRepository;
 import com.softii.laborappbackend.repositories.UsuarioRepository;
+import com.softii.laborappbackend.repositories.TrabajoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +25,15 @@ public class PostulacionController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private TrabajoRepository trabajoRepository;
+
     @PostMapping
     public ResponseEntity<?> crearPostulacion(@RequestBody Postulacion postulacion) {
-        // Añadir logs para confirmar recepción de datos
         System.out.println("Recibido postulacion: " + postulacion);
         System.out.println("Trabajo ID: " + postulacion.getTrabajo().getIdtrabajo());
         System.out.println("Cliente ID: " + postulacion.getCliente().getIdcliente());
         System.out.println("Freelancer ID: " + postulacion.getFreelancer().getIdfreelancer());
-
-        // Validar y guardar la postulacion
         postulacion.setEstado(EstadoPropuesta.PENDIENTE); // O cualquier estado inicial que necesites
         postulacionRepository.save(postulacion);
         return ResponseEntity.ok().build();
@@ -72,6 +75,45 @@ public class PostulacionController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarPostulacion(@PathVariable Long id) {
         postulacionRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/aceptar")
+    public ResponseEntity<?> aceptarPropuesta(@PathVariable Long id) {
+        Postulacion postulacion = postulacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Propuesta no encontrada"));
+        postulacion.setEstado(EstadoPropuesta.ACEPTADO);
+        postulacionRepository.save(postulacion);
+
+        // Cambiar el estado del trabajo a ACEPTADO
+        Trabajo trabajo = postulacion.getTrabajo();
+        trabajo.setEstado(EstadoTrabajo.ACEPTADO);
+        trabajoRepository.save(trabajo);
+
+        // Rechazar otras propuestas para el mismo trabajo
+        List<Postulacion> otrasPropuestas = postulacionRepository.findByTrabajo_Idtrabajo(trabajo.getIdtrabajo());
+        for (Postulacion otraPropuesta : otrasPropuestas) {
+            if (!otraPropuesta.getId().equals(postulacion.getId())) {
+                otraPropuesta.setEstado(EstadoPropuesta.RECHAZADO);
+                postulacionRepository.save(otraPropuesta);
+            }
+        }
+
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/cliente/{clienteId}/detalle")
+    public ResponseEntity<Usuario> getClienteDetalle(@PathVariable Long clienteId) {
+        Usuario cliente = usuarioRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        return ResponseEntity.ok(cliente);
+    }
+
+    @PostMapping("/{id}/rechazar")
+    public ResponseEntity<?> rechazarPropuesta(@PathVariable Long id) {
+        Postulacion postulacion = postulacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Propuesta no encontrada"));
+        postulacion.setEstado(EstadoPropuesta.RECHAZADO);
+        postulacionRepository.save(postulacion);
         return ResponseEntity.ok().build();
     }
 }
