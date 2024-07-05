@@ -5,6 +5,10 @@ import com.softii.laborappbackend.entities.Usuario;
 import com.softii.laborappbackend.dto.FreelancerCreationDTO;
 import com.softii.laborappbackend.repositories.FreelancerRepository;
 import com.softii.laborappbackend.repositories.UsuarioRepository;
+import com.softii.laborappbackend.entities.Postulacion;
+import com.softii.laborappbackend.entities.Cliente;
+import com.softii.laborappbackend.entities.Trabajo;
+import com.softii.laborappbackend.repositories.PostulacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +26,9 @@ public class FreelancerController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PostulacionRepository postulacionRepository;
 
     @PostMapping
     public ResponseEntity<Freelancer> crearFreelancer(@RequestBody FreelancerCreationDTO freelancerDTO) {
@@ -89,14 +96,20 @@ public class FreelancerController {
     }
 
     // Nueva ruta para obtener los detalles del freelancer
-    @GetMapping("/{idfreelancer}/detalle")
-    public ResponseEntity<Usuario> getFreelancerDetalle(@PathVariable Long idfreelancer) {
-        Freelancer freelancer = freelancerRepository.findById(idfreelancer)
-                .orElseThrow(() -> new RuntimeException("Freelancer no encontrado"));
-        Usuario usuario = freelancer.getUsuario(); // Obtenemos el usuario directamente del freelancer
+    @GetMapping("/trabajo/{idtrabajo}/detalle")
+    public ResponseEntity<Usuario> getFreelancerByTrabajo(@PathVariable Long idtrabajo) {
+        List<Postulacion> postulaciones = postulacionRepository.findByTrabajo_Idtrabajo(idtrabajo);
+        if (postulaciones.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        Freelancer freelancer = postulaciones.get(0).getFreelancer();
+        Usuario usuario = freelancer.getUsuario();
         if (usuario == null) {
-            throw new RuntimeException("Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(usuario);
     }
+
+
+
 }
