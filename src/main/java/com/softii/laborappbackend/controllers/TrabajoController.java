@@ -6,8 +6,11 @@ import com.softii.laborappbackend.dto.TrabajoDTO;
 import com.softii.laborappbackend.entities.Cliente;
 import com.softii.laborappbackend.entities.EstadoTrabajo;
 import com.softii.laborappbackend.entities.Trabajo;
+import com.softii.laborappbackend.entities.Postulacion;
+import com.softii.laborappbackend.entities.EstadoPropuesta;
 import com.softii.laborappbackend.repositories.ClienteRepository;
 import com.softii.laborappbackend.repositories.TrabajoRepository;
+import com.softii.laborappbackend.repositories.PostulacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,6 +41,9 @@ public class TrabajoController {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private PostulacionRepository postulacionRepository;
 
     @PostMapping(consumes = { "multipart/form-data" })
     @Transactional
@@ -224,6 +230,25 @@ public class TrabajoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
         }
     }
+    @PutMapping("/{id}/finalizar")
+    @Transactional
+    public ResponseEntity<?> finalizarTrabajo(@PathVariable Long id) {
+        Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
+        if (trabajoOptional.isPresent()) {
+            Trabajo trabajo = trabajoOptional.get();
+            trabajo.setEstado(EstadoTrabajo.FINALIZADO);
+            trabajoRepository.save(trabajo);
 
+            // Actualiza las postulaciones correspondientes
+            List<Postulacion> postulaciones = postulacionRepository.findByTrabajo_Idtrabajo(id);
+            for (Postulacion postulacion : postulaciones) {
+                postulacion.setEstado(EstadoPropuesta.TERMINADO);
+                postulacionRepository.save(postulacion);
+            }
 
+            return ResponseEntity.ok(Collections.singletonMap("message", "El trabajo ha sido finalizado."));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
+        }
+    }
 }
