@@ -1,8 +1,8 @@
 package com.softii.laborappbackend.controllers;
 
-import com.softii.laborappbackend.dto.FreelancerCreationDTO;
 import com.softii.laborappbackend.entities.Freelancer;
 import com.softii.laborappbackend.entities.Usuario;
+import com.softii.laborappbackend.dto.FreelancerCreationDTO;
 import com.softii.laborappbackend.repositories.FreelancerRepository;
 import com.softii.laborappbackend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/freelancers")
@@ -86,5 +86,17 @@ public class FreelancerController {
 
         freelancerRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Nueva ruta para obtener los detalles del freelancer
+    @GetMapping("/{idfreelancer}/detalle")
+    public ResponseEntity<Usuario> getFreelancerDetalle(@PathVariable Long idfreelancer) {
+        Freelancer freelancer = freelancerRepository.findById(idfreelancer)
+                .orElseThrow(() -> new RuntimeException("Freelancer no encontrado"));
+        Usuario usuario = freelancer.getUsuario(); // Obtenemos el usuario directamente del freelancer
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        return ResponseEntity.ok(usuario);
     }
 }

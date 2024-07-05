@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
@@ -206,4 +207,20 @@ public class TrabajoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
         }
     }
+    @PostMapping("/{idtrabajo}/actualizar-estado")
+    public ResponseEntity<?> actualizarEstadoTrabajo(@PathVariable Long idtrabajo, @RequestBody Map<String, String> request) {
+        if (request == null) {
+            logger.error("Request body is missing");
+            throw new RuntimeException("Request body is missing");
+        }
+        logger.info("Request body: {}", request);
+
+        Trabajo trabajo = trabajoRepository.findById(idtrabajo)
+                .orElseThrow(() -> new RuntimeException("Trabajo no encontrado"));
+        String nuevoEstado = request.get("estado");
+        trabajo.setEstado(EstadoTrabajo.valueOf(nuevoEstado));
+        trabajoRepository.save(trabajo);
+        return ResponseEntity.ok().build();
+    }
+
 }
