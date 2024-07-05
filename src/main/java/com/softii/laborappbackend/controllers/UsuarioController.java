@@ -220,6 +220,21 @@ public class UsuarioController {
 
         return ResponseEntity.ok(perfilDTO);
     }
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("Newpassword");
 
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByCorreo(email);
+        if (!usuarioOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "Este correo no está registrado"));
+        }
+
+        Usuario usuario = usuarioOptional.get();
+        usuario.setContrasena(newPassword);
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "Contraseña actualizada exitosamente"));
+    }
 
 }
