@@ -207,20 +207,23 @@ public class TrabajoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
         }
     }
-    @PostMapping("/{idtrabajo}/actualizar-estado")
-    public ResponseEntity<?> actualizarEstadoTrabajo(@PathVariable Long idtrabajo, @RequestBody Map<String, String> request) {
-        if (request == null) {
-            logger.error("Request body is missing");
-            throw new RuntimeException("Request body is missing");
+    @PutMapping("/{id}/actualizar-estado")
+    public ResponseEntity<?> actualizarEstadoTrabajo(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        Optional<Trabajo> trabajoOptional = trabajoRepository.findById(id);
+        if (trabajoOptional.isPresent()) {
+            Trabajo trabajo = trabajoOptional.get();
+            try {
+                EstadoTrabajo nuevoEstado = EstadoTrabajo.valueOf(request.get("estado").toUpperCase());
+                trabajo.setEstado(nuevoEstado);
+                trabajoRepository.save(trabajo);
+                return ResponseEntity.ok(Collections.singletonMap("message", "Estado actualizado correctamente."));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Estado no válido."));
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
         }
-        logger.info("Request body: {}", request);
-
-        Trabajo trabajo = trabajoRepository.findById(idtrabajo)
-                .orElseThrow(() -> new RuntimeException("Trabajo no encontrado"));
-        String nuevoEstado = request.get("estado");
-        trabajo.setEstado(EstadoTrabajo.valueOf(nuevoEstado));
-        trabajoRepository.save(trabajo);
-        return ResponseEntity.ok().build();
     }
+
 
 }
