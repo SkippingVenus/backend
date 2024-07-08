@@ -55,6 +55,14 @@ public class UsuarioController {
                         } else {
                             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Cliente no encontrado"));
                         }
+                    } else if ("FREELANCER".equals(rol)) {
+                        Optional<Freelancer> freelancerOptional = freelancerRepository.findByUsuario_Idusuario(usuario.getIdusuario());
+                        if (freelancerOptional.isPresent()) {
+                            Freelancer freelancer = freelancerOptional.get();
+                            response.put("idfreelancer", freelancer.getIdfreelancer());
+                        } else {
+                            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Freelancer no encontrado"));
+                        }
                     }
 
                     return ResponseEntity.ok(response);
@@ -69,6 +77,7 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Error en el servidor"));
         }
     }
+
 
     @GetMapping(produces = "application/json")
     public ResponseEntity<List<Usuario>> obtenerTodosLosUsuarios() {
@@ -183,14 +192,16 @@ public class UsuarioController {
         }
         usuarioRepository.save(usuario);
 
-        Freelancer freelancer = freelancerRepository.findByUsuario_Idusuario(id);
-        if (freelancer != null) {
+        Optional<Freelancer> freelancerOptional = freelancerRepository.findByUsuario_Idusuario(id);
+        if (freelancerOptional.isPresent()) {
+            Freelancer freelancer = freelancerOptional.get();
             freelancer.setHabilidades(perfilDTO.getHabilidades());
             freelancerRepository.save(freelancer);
         }
 
         return ResponseEntity.ok("{\"message\": \"Perfil actualizado exitosamente\"}");
     }
+
 
     @GetMapping("/perfilfreelancer/{id}")
     public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long id) {
@@ -200,17 +211,17 @@ public class UsuarioController {
         }
 
         Usuario usuario = usuarioOptional.get();
-        Freelancer freelancer = freelancerRepository.findByUsuario_Idusuario(id);
+        Optional<Freelancer> freelancerOptional = freelancerRepository.findByUsuario_Idusuario(id);
 
         PerfilDTO perfilDTO = new PerfilDTO();
         perfilDTO.setCorreo(usuario.getCorreo());
         perfilDTO.setContrasena(usuario.getContrasena());
         perfilDTO.setNumero(usuario.getNumero());
-        perfilDTO.setHabilidades(freelancer != null ? freelancer.getHabilidades() : "");
         perfilDTO.setNombre(usuario.getNombre());
         perfilDTO.setEdad(usuario.getEdad());
         perfilDTO.setSexo(usuario.getSexo());
-        perfilDTO.setIdfreelancer(freelancer != null ? freelancer.getIdfreelancer() : null);
+        perfilDTO.setIdfreelancer(freelancerOptional.map(Freelancer::getIdfreelancer).orElse(null));
+        perfilDTO.setHabilidades(freelancerOptional.map(Freelancer::getHabilidades).orElse(""));
 
         if (usuario.getImagen() != null) {
             perfilDTO.setImagen(Base64.getEncoder().encodeToString(usuario.getImagen()));
@@ -220,6 +231,8 @@ public class UsuarioController {
 
         return ResponseEntity.ok(perfilDTO);
     }
+
+
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
