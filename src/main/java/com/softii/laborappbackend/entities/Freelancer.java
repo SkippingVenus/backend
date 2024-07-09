@@ -16,7 +16,14 @@ public class Freelancer {
     @JoinColumn(name = "idusuario")
     private Usuario usuario;
 
-    // Getters y setters
+    public Freelancer() {
+    }
+
+    public Freelancer(Long idfreelancer) {
+        this.idfreelancer = idfreelancer;
+    }
+
+    // Getters y Setters
     public Long getIdfreelancer() {
         return idfreelancer;
     }

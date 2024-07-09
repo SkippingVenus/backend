@@ -6,5 +6,6 @@ public enum EstadoTrabajo {
     RECHAZADO,
     ACEPTADO,
     EN_PROCESO,
-    FINALIZADO
+    FINALIZADO,
+    CALIFICADO
 }

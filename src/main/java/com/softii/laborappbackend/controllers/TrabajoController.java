@@ -6,6 +6,7 @@ import com.softii.laborappbackend.dto.TrabajoDTO;
 import com.softii.laborappbackend.entities.Cliente;
 import com.softii.laborappbackend.entities.EstadoTrabajo;
 import com.softii.laborappbackend.entities.Trabajo;
+import com.softii.laborappbackend.entities.Freelancer;
 import com.softii.laborappbackend.entities.Postulacion;
 import com.softii.laborappbackend.entities.EstadoPropuesta;
 import com.softii.laborappbackend.repositories.ClienteRepository;
@@ -249,6 +250,16 @@ public class TrabajoController {
             return ResponseEntity.ok(Collections.singletonMap("message", "El trabajo ha sido finalizado."));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "Trabajo no encontrado."));
+        }
+    }
+    @GetMapping("/{idtrabajo}/freelancer")
+    public ResponseEntity<Freelancer> getFreelancerByTrabajoId(@PathVariable Long idtrabajo) {
+        Optional<Postulacion> postulacion = postulacionRepository.findByTrabajoIdtrabajoAndEstado(idtrabajo, EstadoPropuesta.TERMINADO);
+
+        if (postulacion.isPresent()) {
+            return ResponseEntity.ok(postulacion.get().getFreelancer());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 }
